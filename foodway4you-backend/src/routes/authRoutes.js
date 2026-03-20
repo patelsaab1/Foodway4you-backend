@@ -2,6 +2,7 @@ const express = require('express');
 const { body } = require('express-validator');
 const auth = require('../middleware/authMiddleware');
 const validate = require('../middleware/validate');
+const { cache } = require('../middleware/cacheMiddleware');
 const ctrl = require('../controllers/authController');
 
 const router = express.Router();
@@ -20,7 +21,6 @@ router.post(
 
 router.post('/login', [body('email').isEmail(), body('password').notEmpty()], validate, ctrl.login);
 router.post('/refresh', ctrl.refresh);
-router.get('/me', auth, (req, res) => res.json({ user: req.user }));
+router.get('/me', auth, cache({ namespace: 'auth', ttlSeconds: 10, varyByUser: true }), (req, res) => res.json({ user: req.user }));
 
 module.exports = router;
-

@@ -1,4 +1,3 @@
-const Payment = require('../models/Payment');
 const response = require('../utils/responseHelper');
 const razorpay = require('../config/razorpay');
 
@@ -19,4 +18,3 @@ exports.verify = async (req, res, next) => {
     next(err);
   }
 };
-
