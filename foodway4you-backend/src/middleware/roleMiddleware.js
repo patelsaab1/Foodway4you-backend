@@ -1,0 +1,23 @@
+const roleMiddleware = (roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required'
+      });
+    }
+
+    const userRole = req.user.role;
+    
+    if (!roles.includes(userRole)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Insufficient permissions'
+      });
+    }
+
+    next();
+  };
+};
+
+module.exports = roleMiddleware;
