@@ -1,7 +1,7 @@
-const express = require('express');
-const auth = require('../middleware/authMiddleware');
-const { cache, bumpNamespaces } = require('../middleware/cacheMiddleware');
-const ctrl = require('../controllers/orderController');
+import express from 'express';
+import auth from '../middleware/authMiddleware.js';
+import { cache, bumpNamespaces } from '../middleware/cacheMiddleware.js';
+import * as ctrl from '../controllers/orderController.js';
 
 const router = express.Router();
 
@@ -10,4 +10,4 @@ router.get('/:id/track', auth, cache({ namespace: 'orders', ttlSeconds: 20, vary
 router.patch('/:id/status', auth, bumpNamespaces(['orders']), ctrl.updateStatus);
 router.post('/:id/cancel', auth, bumpNamespaces(['orders']), ctrl.cancel);
 
-module.exports = router;
+export default router;

@@ -38,4 +38,4 @@ const responseHelper = {
   }
 };
 
-module.exports = responseHelper;
+export default responseHelper;

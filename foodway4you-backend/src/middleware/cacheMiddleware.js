@@ -1,5 +1,5 @@
-const { createClient } = require('redis');
-const logger = require('../utils/logger');
+import { createClient } from 'redis';
+import logger from '../utils/logger.js';
 
 let redisClient = null;
 let redisConnecting = null;
@@ -134,4 +134,4 @@ const bumpNamespaces = (namespaces = []) => {
   };
 };
 
-module.exports = { cache, bumpNamespaces };
+export { cache, bumpNamespaces };

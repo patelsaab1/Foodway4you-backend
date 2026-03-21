@@ -47,7 +47,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test{{randomInt}}@example.com\",\n  \"phone\": \"99999{{randomInt}}\",\n  \"password\": \"password123\",\n  \"role\": \"customer\"\n}"
+              "raw": "{\n  \"name\": \"Restaurant Owner\",\n  \"email\": \"restaurant{{randomInt}}@example.com\",\n  \"phone\": \"99999{{randomInt}}\",\n  \"password\": \"password123\",\n  \"role\": \"restaurant\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/auth/register",
@@ -61,7 +61,13 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Registered (201 or 200)', () => pm.expect([200,201]).to.include(pm.response.code));"
+                  "pm.test('Registered (201 or 200)', () => pm.expect([200,201]).to.include(pm.response.code));",
+                  "const json = pm.response.json();",
+                  "const email = json?.data?.user?.email;",
+                  "if (email) {",
+                  "  pm.environment.set('login_email', email);",
+                  "  pm.environment.set('login_password', 'password123');",
+                  "}"
                 ]
               }
             }
@@ -114,6 +120,61 @@
               "path": ["api", "v1", "auth", "me"]
             }
           }
+        },
+        {
+          "name": "PATCH /api/v1/auth/me",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Owner Name\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/v1/auth/forgot-password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{login_email}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "forgot-password"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/v1/auth/reset-password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{reset_token}}\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "reset-password"]
+            }
+          }
         }
       ]
     },
@@ -130,7 +191,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"My Restaurant\",\n  \"address\": \"Some street\",\n  \"phone\": \"9999999999\"\n}"
+              "raw": "{\n  \"name\": \"My Restaurant\",\n  \"description\": \"Great food\",\n  \"address\": {\n    \"street\": \"Some street\",\n    \"city\": \"Indore\",\n    \"state\": \"MP\",\n    \"zipCode\": \"452001\",\n    \"coordinates\": { \"latitude\": 22.7196, \"longitude\": 75.8577 }\n  },\n  \"cuisine\": [\"Indian\"],\n  \"contact\": {\n    \"phone\": \"9999999999\",\n    \"email\": \"{{login_email}}\"\n  }\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/restaurants",
@@ -152,6 +213,86 @@
               }
             }
           ]
+        },
+        {
+          "name": "GET /api/v1/restaurants/me",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/restaurants/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "restaurants", "me"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/v1/restaurants/onboard",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Restaurant\",\n  \"description\": \"Great food\",\n  \"address\": {\n    \"street\": \"Some street\",\n    \"city\": \"Indore\",\n    \"state\": \"MP\",\n    \"zipCode\": \"452001\",\n    \"coordinates\": { \"latitude\": 22.7196, \"longitude\": 75.8577 }\n  },\n  \"cuisine\": [\"Indian\"],\n  \"contact\": {\n    \"phone\": \"9999999999\",\n    \"email\": \"{{login_email}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/restaurants/onboard",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "restaurants", "onboard"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data._id) {",
+                  "  pm.environment.set('restaurantId', json.data._id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/v1/restaurants/kyc",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kyc\": {\n    \"businessType\": \"proprietorship\",\n    \"legalName\": \"My Restaurant Pvt\",\n    \"gstNumber\": \"22AAAAA0000A1Z5\",\n    \"panNumber\": \"AAAAA0000A\",\n    \"fssaiNumber\": \"12345678901234\",\n    \"documents\": {\n      \"panUrl\": \"https://example.com/pan.pdf\",\n      \"gstUrl\": \"https://example.com/gst.pdf\",\n      \"fssaiUrl\": \"https://example.com/fssai.pdf\"\n    },\n    \"bank\": {\n      \"accountHolderName\": \"Owner Name\",\n      \"accountNumber\": \"1234567890\",\n      \"ifscCode\": \"HDFC0000001\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/restaurants/kyc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "restaurants", "kyc"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/v1/restaurants/kyc",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/restaurants/kyc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "restaurants", "kyc"]
+            }
+          }
         },
         {
           "name": "GET /api/v1/restaurants",

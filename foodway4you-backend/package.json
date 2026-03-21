@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "FoodWay4You backend API - Node.js + Express + MongoDB",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",

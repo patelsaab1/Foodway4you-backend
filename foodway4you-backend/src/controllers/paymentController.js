@@ -1,7 +1,7 @@
-const response = require('../utils/responseHelper');
-const { getRazorpay } = require('../config/razorpay');
+import response from '../utils/responseHelper.js';
+import { getRazorpay } from '../config/razorpay.js';
 
-exports.createOrder = async (req, res, next) => {
+export const createOrder = async (req, res, next) => {
   try {
     const razorpay = getRazorpay();
     if (!razorpay) return response.error(res, 'Razorpay is not configured', 503);
@@ -13,7 +13,7 @@ exports.createOrder = async (req, res, next) => {
   }
 };
 
-exports.verify = async (req, res, next) => {
+export const verify = async (req, res, next) => {
   try {
     response.error(res, 'Not implemented', 501);
   } catch (err) {

@@ -1,7 +1,7 @@
-const MenuItem = require('../models/MenuItem');
-const response = require('../utils/responseHelper');
+import MenuItem from '../models/MenuItem.js';
+import response from '../utils/responseHelper.js';
 
-exports.create = async (req, res, next) => {
+export const create = async (req, res, next) => {
   try {
     const doc = await MenuItem.create(req.body);
     response.success(res, doc, 'Created', 201);
@@ -10,7 +10,7 @@ exports.create = async (req, res, next) => {
   }
 };
 
-exports.list = async (req, res, next) => {
+export const list = async (req, res, next) => {
   try {
     const filter = {};
     if (req.query.restaurant) filter.restaurant = req.query.restaurant;
@@ -21,7 +21,7 @@ exports.list = async (req, res, next) => {
   }
 };
 
-exports.update = async (req, res, next) => {
+export const update = async (req, res, next) => {
   try {
     const doc = await MenuItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!doc) return response.notFound(res);
@@ -31,7 +31,7 @@ exports.update = async (req, res, next) => {
   }
 };
 
-exports.remove = async (req, res, next) => {
+export const remove = async (req, res, next) => {
   try {
     const doc = await MenuItem.findByIdAndDelete(req.params.id);
     if (!doc) return response.notFound(res);
@@ -40,4 +40,3 @@ exports.remove = async (req, res, next) => {
     next(err);
   }
 };
-

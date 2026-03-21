@@ -1,7 +1,7 @@
-const Notification = require('../models/Notification');
-const response = require('../utils/responseHelper');
+import Notification from '../models/Notification.js';
+import response from '../utils/responseHelper.js';
 
-exports.list = async (req, res, next) => {
+export const list = async (req, res, next) => {
   try {
     const docs = await Notification.find({ recipient: req.user.id }).sort({ createdAt: -1 });
     response.success(res, docs);
@@ -10,7 +10,7 @@ exports.list = async (req, res, next) => {
   }
 };
 
-exports.markRead = async (req, res, next) => {
+export const markRead = async (req, res, next) => {
   try {
     const doc = await Notification.findByIdAndUpdate(req.params.id, { isRead: true, readAt: new Date() }, { new: true });
     response.success(res, doc, 'Marked as read');
@@ -18,4 +18,3 @@ exports.markRead = async (req, res, next) => {
     next(err);
   }
 };
-

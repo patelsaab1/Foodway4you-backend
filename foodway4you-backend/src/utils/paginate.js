@@ -1,4 +1,4 @@
-const paginate = (query, options = {}) => {
+export const paginate = (query, options = {}) => {
   const page = parseInt(options.page) || 1;
   const limit = parseInt(options.limit) || 10;
   const skip = (page - 1) * limit;
@@ -17,7 +17,7 @@ const paginate = (query, options = {}) => {
   };
 };
 
-const getPaginationData = (data, page, limit) => {
+export const getPaginationData = (data, page, limit) => {
   const { count: totalItems, rows } = data;
   const currentPage = page ? +page : 1;
   const totalPages = Math.ceil(totalItems / limit);
@@ -30,7 +30,4 @@ const getPaginationData = (data, page, limit) => {
   };
 };
 
-module.exports = {
-  paginate,
-  getPaginationData
-};
+ 

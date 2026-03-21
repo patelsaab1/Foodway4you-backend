@@ -4,5 +4,4 @@ const splitCommission = ({ total, commissionRate }) => {
   return { commission, net };
 };
 
-module.exports = { splitCommission };
-
+export { splitCommission };

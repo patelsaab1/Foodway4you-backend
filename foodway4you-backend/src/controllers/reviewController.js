@@ -1,7 +1,7 @@
-const Review = require('../models/Review');
-const response = require('../utils/responseHelper');
+import Review from '../models/Review.js';
+import response from '../utils/responseHelper.js';
 
-exports.create = async (req, res, next) => {
+export const create = async (req, res, next) => {
   try {
     const payload = { ...req.body, user: req.user.id };
     const doc = await Review.create(payload);
@@ -11,7 +11,7 @@ exports.create = async (req, res, next) => {
   }
 };
 
-exports.list = async (req, res, next) => {
+export const list = async (req, res, next) => {
   try {
     const filter = {};
     if (req.query.restaurant) filter.restaurant = req.query.restaurant;
@@ -21,4 +21,3 @@ exports.list = async (req, res, next) => {
     next(err);
   }
 };
-

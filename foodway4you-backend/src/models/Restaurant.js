@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const restaurantSchema = new mongoose.Schema({
   name: {
@@ -69,9 +69,38 @@ const restaurantSchema = new mongoose.Schema({
   estimatedDeliveryTime: {
     type: Number,
     default: 30
+  },
+  onboarding: {
+    status: {
+      type: String,
+      enum: ['pending', 'submitted', 'verified', 'rejected'],
+      default: 'pending'
+    },
+    submittedAt: { type: Date, default: null },
+    verifiedAt: { type: Date, default: null },
+    rejectedAt: { type: Date, default: null },
+    rejectionReason: { type: String, default: '' }
+  },
+  kyc: {
+    businessType: { type: String, enum: ['proprietorship', 'partnership', 'pvt-ltd', 'llp', 'other'], default: 'other' },
+    legalName: { type: String, default: '' },
+    gstNumber: { type: String, default: '' },
+    panNumber: { type: String, default: '' },
+    fssaiNumber: { type: String, default: '' },
+    documents: {
+      panUrl: { type: String, default: '' },
+      gstUrl: { type: String, default: '' },
+      fssaiUrl: { type: String, default: '' },
+      cancelledChequeUrl: { type: String, default: '' }
+    },
+    bank: {
+      accountHolderName: { type: String, default: '' },
+      accountNumber: { type: String, default: '' },
+      ifscCode: { type: String, default: '' }
+    }
   }
 }, {
   timestamps: true
 });
 
-module.exports = mongoose.model('Restaurant', restaurantSchema);
+export default mongoose.model('Restaurant', restaurantSchema);

@@ -1,16 +1,30 @@
-const path = require('path');
-const http = require('http');
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const dotenv = require('dotenv');
-const { Server } = require('socket.io');
+import http from 'node:http';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import dotenv from 'dotenv';
+import { Server } from 'socket.io';
 
-const connectDB = require('./src/config/db');
-const errorHandler = require('./src/middleware/errorHandler');
-const logger = require('./src/utils/logger');
-const socketHandler = require('./src/socket/socketHandler');
+import connectDB from './src/config/db.js';
+import errorHandler from './src/middleware/errorHandler.js';
+import logger from './src/utils/logger.js';
+import socketHandler from './src/socket/socketHandler.js';
+
+import authRoutes from './src/routes/authRoutes.js';
+import restaurantRoutes from './src/routes/restaurantRoutes.js';
+import menuRoutes from './src/routes/menuRoutes.js';
+import orderRoutes from './src/routes/orderRoutes.js';
+import deliveryRoutes from './src/routes/deliveryRoutes.js';
+import paymentRoutes from './src/routes/paymentRoutes.js';
+import reviewRoutes from './src/routes/reviewRoutes.js';
+import couponRoutes from './src/routes/couponRoutes.js';
+import adminRoutes from './src/routes/adminRoutes.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.join(__dirname, '.env') });
 
@@ -30,19 +44,7 @@ app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-if (process.env.NODE_ENV !== 'production') {
-  app.use(morgan('dev'));
-}
-
-const authRoutes = require('./src/routes/authRoutes');
-const restaurantRoutes = require('./src/routes/restaurantRoutes');
-const menuRoutes = require('./src/routes/menuRoutes');
-const orderRoutes = require('./src/routes/orderRoutes');
-const deliveryRoutes = require('./src/routes/deliveryRoutes');
-const paymentRoutes = require('./src/routes/paymentRoutes');
-const reviewRoutes = require('./src/routes/reviewRoutes');
-const couponRoutes = require('./src/routes/couponRoutes');
-const adminRoutes = require('./src/routes/adminRoutes');
+if (process.env.NODE_ENV !== 'production') app.use(morgan('dev'));
 
 app.get('/health', (req, res) => {
   res.json({ ok: true, service: 'foodway4you-backend', time: new Date().toISOString() });
@@ -67,4 +69,3 @@ connectDB().then(() => {
     logger.info(`Server running on port ${PORT}`);
   });
 });
-

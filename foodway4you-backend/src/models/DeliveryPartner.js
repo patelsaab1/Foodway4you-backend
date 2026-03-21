@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const deliveryPartnerSchema = new mongoose.Schema({
   user: {
@@ -56,4 +56,4 @@ const deliveryPartnerSchema = new mongoose.Schema({
   timestamps: true
 });
 
-module.exports = mongoose.model('DeliveryPartner', deliveryPartnerSchema);
+export default mongoose.model('DeliveryPartner', deliveryPartnerSchema);

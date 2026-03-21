@@ -1,4 +1,4 @@
-module.exports = (io) => {
+export default (io) => {
   io.on('connection', (socket) => {
     socket.on('join', (room) => {
       if (room) socket.join(room);
@@ -19,4 +19,3 @@ module.exports = (io) => {
     socket.on('disconnect', () => {});
   });
 };
-

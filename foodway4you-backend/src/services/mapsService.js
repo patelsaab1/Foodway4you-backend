@@ -11,5 +11,4 @@ const haversine = (a, b) => {
   return R * c;
 };
 
-module.exports = { haversine };
-
+export { haversine };

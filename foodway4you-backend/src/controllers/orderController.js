@@ -1,7 +1,7 @@
-const Order = require('../models/Order');
-const response = require('../utils/responseHelper');
+import Order from '../models/Order.js';
+import response from '../utils/responseHelper.js';
 
-exports.place = async (req, res, next) => {
+export const place = async (req, res, next) => {
   try {
     const payload = { ...req.body, customer: req.user.id };
     const doc = await Order.create(payload);
@@ -11,7 +11,7 @@ exports.place = async (req, res, next) => {
   }
 };
 
-exports.track = async (req, res, next) => {
+export const track = async (req, res, next) => {
   try {
     const doc = await Order.findById(req.params.id);
     if (!doc) return response.notFound(res);
@@ -21,7 +21,7 @@ exports.track = async (req, res, next) => {
   }
 };
 
-exports.updateStatus = async (req, res, next) => {
+export const updateStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
     const doc = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true });
@@ -32,7 +32,7 @@ exports.updateStatus = async (req, res, next) => {
   }
 };
 
-exports.cancel = async (req, res, next) => {
+export const cancel = async (req, res, next) => {
   try {
     const doc = await Order.findByIdAndUpdate(req.params.id, { status: 'cancelled' }, { new: true });
     if (!doc) return response.notFound(res);
@@ -41,4 +41,3 @@ exports.cancel = async (req, res, next) => {
     next(err);
   }
 };
-

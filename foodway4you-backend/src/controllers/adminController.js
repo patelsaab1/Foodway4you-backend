@@ -1,6 +1,6 @@
-const response = require('../utils/responseHelper');
+import response from '../utils/responseHelper.js';
 
-exports.dashboard = async (req, res, next) => {
+export const dashboard = async (req, res, next) => {
   try {
     response.success(res, { status: 'ok' }, 'Admin dashboard');
   } catch (err) {

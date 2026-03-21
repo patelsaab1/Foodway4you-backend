@@ -1,7 +1,7 @@
-const Coupon = require('../models/Coupon');
-const response = require('../utils/responseHelper');
+import Coupon from '../models/Coupon.js';
+import response from '../utils/responseHelper.js';
 
-exports.create = async (req, res, next) => {
+export const create = async (req, res, next) => {
   try {
     const doc = await Coupon.create(req.body);
     response.success(res, doc, 'Created', 201);
@@ -10,7 +10,7 @@ exports.create = async (req, res, next) => {
   }
 };
 
-exports.apply = async (req, res, next) => {
+export const apply = async (req, res, next) => {
   try {
     const { code, amount } = req.body;
     const now = new Date();

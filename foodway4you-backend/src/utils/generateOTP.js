@@ -9,4 +9,4 @@ const generateOTP = (length = 6) => {
   return otp;
 };
 
-module.exports = generateOTP;
+export default generateOTP;

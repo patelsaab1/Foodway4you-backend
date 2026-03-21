@@ -1,4 +1,4 @@
-const Razorpay = require('razorpay');
+import Razorpay from 'razorpay';
 
 let client = null;
 
@@ -18,4 +18,4 @@ const getRazorpay = () => {
   return client;
 };
 
-module.exports = { getRazorpay };
+export { getRazorpay };

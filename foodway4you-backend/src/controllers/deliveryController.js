@@ -1,7 +1,7 @@
-const DeliveryPartner = require('../models/DeliveryPartner');
-const response = require('../utils/responseHelper');
+import DeliveryPartner from '../models/DeliveryPartner.js';
+import response from '../utils/responseHelper.js';
 
-exports.profile = async (req, res, next) => {
+export const profile = async (req, res, next) => {
   try {
     const doc = await DeliveryPartner.findOne({ user: req.user.id });
     response.success(res, doc);
@@ -10,7 +10,7 @@ exports.profile = async (req, res, next) => {
   }
 };
 
-exports.updateLocation = async (req, res, next) => {
+export const updateLocation = async (req, res, next) => {
   try {
     const { latitude, longitude } = req.body;
     const doc = await DeliveryPartner.findOneAndUpdate(
@@ -23,4 +23,3 @@ exports.updateLocation = async (req, res, next) => {
     next(err);
   }
 };
-

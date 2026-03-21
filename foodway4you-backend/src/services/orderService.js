@@ -10,5 +10,4 @@ const nextStatus = (current) => {
   return flow[idx + 1];
 };
 
-module.exports = { assignRider, nextStatus };
-
+export { assignRider, nextStatus };
