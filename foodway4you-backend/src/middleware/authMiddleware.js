@@ -3,22 +3,33 @@ import User from '../models/User.js';
 
 const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
+    const authHeader = req.header('Authorization');
+
+    // 🔍 Check header
+    console.log("HEADER:", authHeader);
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         success: false,
-        message: 'No token provided, authorization denied'
+        message: 'No token provided'
       });
     }
 
+    // 🔑 Extract token
+    const token = authHeader.replace('Bearer ', '');
+    console.log("TOKEN:", token);
+
+    // 🔥 Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("DECODED:", decoded);
+
+    // 👤 Find user
     const user = await User.findById(decoded.id).select('-password');
-    
+
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Token is not valid'
+        message: 'User not found'
       });
     }
 
@@ -31,8 +42,12 @@ const authMiddleware = async (req, res, next) => {
 
     req.user = user;
     next();
+
   } catch (error) {
-    res.status(401).json({
+   
+    console.log("JWT ERROzR--:", error);
+
+    return res.status(401).json({
       success: false,
       message: 'Token is not valid'
     });

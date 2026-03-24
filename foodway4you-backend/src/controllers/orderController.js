@@ -12,13 +12,17 @@ export const place = async (req, res, next) => {
 };
 
 export const track = async (req, res, next) => {
+  console.log("functionn-----")
   try {
     const doc = await Order.findById(req.params.id);
     if (!doc) return response.notFound(res);
     response.success(res, { status: doc.status, id: doc.id });
+    console.log ('track ko check kar rahe hai ')
   } catch (err) {
     next(err);
   }
+
+  
 };
 
 export const updateStatus = async (req, res, next) => {
@@ -34,9 +38,29 @@ export const updateStatus = async (req, res, next) => {
 
 export const cancel = async (req, res, next) => {
   try {
-    const doc = await Order.findByIdAndUpdate(req.params.id, { status: 'cancelled' }, { new: true });
+    const { reason } = req.body;
+
+  
+    if (!reason || reason.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Cancellation reason is required. Please provide a reason to cancel the order."
+      });
+    }
+
+    
+    const doc = await Order.findByIdAndUpdate(
+      req.params.id, 
+      { 
+        status: 'cancelled',
+        cancellationReason: reason 
+      }, 
+      { new: true }
+    );
+
     if (!doc) return response.notFound(res);
-    response.success(res, doc, 'Order cancelled');
+
+    response.success(res, doc, 'Order cancelled successfully with feedback');
   } catch (err) {
     next(err);
   }

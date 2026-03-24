@@ -54,6 +54,7 @@ const makeCacheKey = ({ namespace, version, url, userId }) => {
 };
 
 const cache = ({ namespace, ttlSeconds = 60, varyByUser = false } = {}) => {
+  console.log("cache",ttlSeconds)
   return async (req, res, next) => {
     if (req.method !== 'GET') return next();
 

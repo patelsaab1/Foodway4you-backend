@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const orderSchema = new mongoose.Schema({
   orderNumber: {
     type: String,
-    required: true,
+    
     unique: true
   },
   customer: {
@@ -101,7 +101,8 @@ const orderSchema = new mongoose.Schema({
   },
   cancellationReason: {
     type: String,
-    default: ''
+    default: '',
+    trim :true
   },
   rating: {
     type: Number,
