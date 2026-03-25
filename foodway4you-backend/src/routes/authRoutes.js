@@ -2,25 +2,16 @@ import express from 'express';
 import { body } from 'express-validator';
 import auth from '../middleware/authMiddleware.js';
 import validate from '../middleware/validate.js';
+import { registerValidation,loginValidation } from '../middleware/authValidationMiddleware.js';
+
 import { cache } from '../middleware/cacheMiddleware.js';
 import * as ctrl from '../controllers/authController.js';
 
 const router = express.Router();
 
-router.post(
-  '/register',
-  [
-    body('name').notEmpty(),
-    body('email').isEmail(),
-    body('phone').notEmpty(),
-    body('password').isLength({ min: 6 }),
-    body('role').optional().isIn(['customer', 'restaurant', 'rider', 'admin']),
-  ],
-  validate,
-  ctrl.register
-);
+router.post('/register', registerValidation, validate, ctrl.register);
 
-router.post('/login', [body('email').isEmail(), body('password').notEmpty()], validate, ctrl.login);
+router.post('/login', loginValidation, validate, ctrl.login);
 router.post('/refresh', ctrl.refresh);
 router.post('/forgot-password', [body('email').isEmail()], validate, ctrl.forgotPassword);
 router.post('/reset-password', [body('token').notEmpty(), body('password').isLength({ min: 6 })], validate, ctrl.resetPassword);
@@ -32,5 +23,7 @@ router.patch(
   validate,
   ctrl.updateProfile
 );
+
+
 
 export default router;
