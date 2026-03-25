@@ -4,7 +4,8 @@ import generateTokens from '../utils/generateToken.js';
 import generateOTP from '../utils/generateOTP.js';
 import response from '../utils/responseHelper.js';
 import { send as sendEmail } from '../services/emailService.js';
-
+import jwt from 'jsonwebtoken';
+import { getFirebaseAdmin } from '../config/firebase.js';
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
 
 const buildResetPasswordEmailHtml = ({ name, resetUrl }) => {
@@ -59,16 +60,56 @@ export const login = async (req, res, next) => {
     if (!user) return response.error(res, 'Invalid credentials', 401);
     const match = await user.matchPassword(password);
     if (!match) return response.error(res, 'Invalid credentials', 401);
-    const tokens = generateTokens(user.id);
-    response.success(res, { tokens, user: { id: user.id, role: user.role } }, 'Logged in');
+         
+    const { accessToken, refreshToken,expiresAt } = generateTokens(user.id);
+
+    
+    user.refreshTokens.push({ token: refreshToken, expiresAt });
+    await user.save();
+    response.success(res, { tokens:{ accessToken, refreshToken}, user: { id: user.id, role: user.role } }, 'Logged in');
   } catch (err) {
     next(err);
   }
 };
 
+// ---------------- REFRESH ----------------
 export const refresh = async (req, res, next) => {
   try {
-    response.error(res, 'Not implemented', 501);
+    const { refreshToken } = req.body;
+    if (!refreshToken) return response.error(res, 'Refresh token required', 400);
+
+  
+    let payload;
+    try {
+      payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    } catch {
+      return response.error(res, 'Invalid refresh token', 401);
+    }
+
+    
+    const user = await User.findOne({
+      _id: payload.id,
+      'refreshTokens.token': refreshToken,
+      'refreshTokens.expiresAt': { $gt: new Date() }
+    });
+
+    if (!user) return response.error(res, 'Invalid or expired refresh token', 401);
+
+    
+    const { accessToken, refreshToken: newRefreshToken,expiresAt } = generateTokens(user.id);
+
+    
+
+    
+    user.refreshTokens = user.refreshTokens.filter(t => t.token !== refreshToken);
+    user.refreshTokens.push({ token: newRefreshToken, expiresAt });
+    user.refreshTokens = user.refreshTokens.filter(t => t.expiresAt > new Date());
+    await user.save();
+
+    response.success(res, {
+      tokens: { accessToken, refreshToken: newRefreshToken }
+    }, 'Tokens refreshed');
+
   } catch (err) {
     next(err);
   }
@@ -152,5 +193,52 @@ export const updateProfile = async (req, res, next) => {
     return response.success(res, { user }, 'Profile updated');
   } catch (err) {
     next(err);
+  }
+};
+
+
+export const googleLogin = async (req, res, next) => {
+  try {
+    const { idToken } = req.body;
+    const admin = getFirebaseAdmin();
+
+    if (!admin) {
+      return response.error(res, 'Firebase connection failed', 500);
+    }
+
+    
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const { email, name, picture, uid } = decodedToken;
+
+    
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      
+      user = await User.create({
+        name,
+        email,
+        avatar: picture,
+        isVerified: true,
+        password: Math.random().toString(36).slice(-10), 
+        phone: `google_${uid.slice(0, 10)}`, 
+      });
+    }
+
+    
+    const { accessToken, refreshToken, expiresAt } = generateTokens(user.id);
+
+    
+    user.refreshTokens.push({ token: refreshToken, expiresAt });
+    await user.save();
+
+    response.success(res, {
+      tokens: { accessToken, refreshToken },
+      user: { id: user.id, role: user.role, name: user.name,email:user.email }
+    }, 'Google Login Successful');
+
+  } catch (error) {
+    console.error('Google Auth Error:', error);
+    return response.error(res, 'Invalid or expired Google token', 401);
   }
 };

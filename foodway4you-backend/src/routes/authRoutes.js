@@ -23,7 +23,8 @@ router.patch(
   validate,
   ctrl.updateProfile
 );
-
+//change
+router.post('/google-login', ctrl.googleLogin);
 
 
 export default router;

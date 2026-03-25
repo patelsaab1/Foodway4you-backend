@@ -69,3 +69,6 @@ connectDB().then(() => {
     logger.info(`Server running on port ${PORT}`);
   });
 });
+
+
+console.log(process.env.SMTP_HOST);
