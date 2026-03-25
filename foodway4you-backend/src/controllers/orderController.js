@@ -12,12 +12,12 @@ export const place = async (req, res, next) => {
 };
 
 export const track = async (req, res, next) => {
-  console.log("functionn-----")
+ 
   try {
     const doc = await Order.findById(req.params.id);
     if (!doc) return response.notFound(res);
     response.success(res, { status: doc.status, id: doc.id });
-    console.log ('track ko check kar rahe hai ')
+
   } catch (err) {
     next(err);
   }
