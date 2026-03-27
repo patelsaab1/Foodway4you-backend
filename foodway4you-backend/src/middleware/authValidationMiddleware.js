@@ -3,7 +3,7 @@ import { body } from 'express-validator';
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/;
 
-const phoneRegex = /^[6-9]\d{9}$/;
+const phoneRegex = /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/;
 
 //  REGISTER VALIDATION
 export const registerValidation = [
@@ -20,7 +20,7 @@ export const registerValidation = [
   body('phone')
     .trim()
     .matches(phoneRegex)
-    .withMessage('Enter valid 10 digit Indian phone number'),
+    .withMessage('Enter a valid Indian phone number (e.g. +919876543210 or 9876543210)'),
 
   body('password')
     .trim()
