@@ -7,6 +7,7 @@ import { send as sendEmail } from '../services/emailService.js';
 
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
 
+
 const buildResetPasswordEmailHtml = ({ name, resetUrl }) => {
   const safeName = name || 'User';
   const safeUrl = resetUrl;
