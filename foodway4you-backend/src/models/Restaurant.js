@@ -80,7 +80,9 @@ const restaurantSchema = new mongoose.Schema({
     verifiedAt: { type: Date, default: null },
     rejectedAt: { type: Date, default: null },
     rejectionReason: { type: String, default: '' }
+
   },
+  // commect test
   kyc: {
     businessType: { type: String, enum: ['proprietorship', 'partnership', 'pvt-ltd', 'llp', 'other'], default: 'other' },
     legalName: { type: String, default: '' },
@@ -92,11 +94,11 @@ const restaurantSchema = new mongoose.Schema({
       panUrl: { type: String, default: '' },
       gstUrl: { type: String, default: '' },
       fssaiUrl: { type: String, default: '' },
-      cancelledChequeUrl: { type: String, default: '' }
+      cancelledChequeUrl: { type: String, default: '' },
+      userPhotoUrl: { type: String, default: '' },
+      restaurantPhotoUrl: { type: String, default: '' },
+      signatureUrl: { type: String, default: '' },
     },
-    userPhotoUrl: { type: String, default: '' },
-    restaurantPhotoUrl: { type: String, default: '' },
-    signatureUrl: { type: String, default: '' },
     
     bank: {
       accountHolderName: { type: String, default: '' },
