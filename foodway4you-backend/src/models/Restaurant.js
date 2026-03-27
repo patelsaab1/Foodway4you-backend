@@ -82,7 +82,7 @@ const restaurantSchema = new mongoose.Schema({
     rejectionReason: { type: String, default: '' }
 
   },
-  // commect test
+  // comment test
   kyc: {
     businessType: { type: String, enum: ['proprietorship', 'partnership', 'pvt-ltd', 'llp', 'other'], default: 'other' },
     legalName: { type: String, default: '' },
