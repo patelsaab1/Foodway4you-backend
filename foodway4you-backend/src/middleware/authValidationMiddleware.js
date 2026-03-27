@@ -41,3 +41,33 @@ export const loginValidation = [
   body('password')
     .notEmpty().withMessage('Password is required')
 ];
+
+
+
+
+export const updateProfileValidation = [
+  body('name')
+    .optional()
+    .trim()
+    .isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
+
+  body('email')
+    .optional()
+    .trim()
+    .isEmail().withMessage('Valid email format is required')
+    .normalizeEmail(),
+
+  body('phone')
+    .optional()
+    .trim()
+    .matches(phoneRegex)
+    .withMessage('Enter a valid Indian phone number'),
+
+  body('avatar')
+    .optional()
+    .isString().withMessage('Avatar must be a valid string URL'),
+
+  body('fcmToken')
+    .optional()
+    .isString().withMessage('FCM Token must be a string')
+];
