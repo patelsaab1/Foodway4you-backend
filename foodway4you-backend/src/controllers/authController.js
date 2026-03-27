@@ -71,7 +71,44 @@ export const login = async (req, res, next) => {
     next(err);
   }
 };
+export const phoneLogin = async (req, res, next) => {
+  try {
+    const { idToken } = req.body;
+    const admin = getFirebaseAdmin();
 
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const verifiedPhone = decodedToken.phone_number; 
+
+    if (!verifiedPhone) {
+      return response.error(res, 'Authentication failed: No phone number found', 401);
+    }
+
+    let user = await User.findOne({ phone: verifiedPhone });
+
+    if (!user) {
+      user = await User.create({
+        name: 'Guest User', 
+        phone: verifiedPhone, 
+        isVerified: true,
+        role: 'customer',
+        password: crypto.randomBytes(16).toString('hex'),
+      });
+    }
+
+    const { accessToken, refreshToken, expiresAt } = generateTokens(user.id);
+    user.refreshTokens.push({ token: refreshToken, expiresAt });
+    await user.save();
+
+    response.success(res, { tokens: { accessToken, refreshToken }, user }, 'Login Successful');
+
+  } catch (error) {
+    // Yahan dhyan do! 
+    console.error('Phone Login Error:', error);
+    
+    // Ye line error ko aapke central errorHandler.js tak bhejti hai
+    next(error); 
+  }
+};
 // ---------------- REFRESH ----------------
 export const refresh = async (req, res, next) => {
   try {
@@ -114,6 +151,7 @@ export const refresh = async (req, res, next) => {
     next(err);
   }
 };
+
 
 export const forgotPassword = async (req, res, next) => {
   try {
