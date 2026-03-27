@@ -87,12 +87,17 @@ const restaurantSchema = new mongoose.Schema({
     gstNumber: { type: String, default: '' },
     panNumber: { type: String, default: '' },
     fssaiNumber: { type: String, default: '' },
+
     documents: {
       panUrl: { type: String, default: '' },
       gstUrl: { type: String, default: '' },
       fssaiUrl: { type: String, default: '' },
       cancelledChequeUrl: { type: String, default: '' }
     },
+    userPhotoUrl: { type: String, default: '' },
+    restaurantPhotoUrl: { type: String, default: '' },
+    signatureUrl: { type: String, default: '' },
+    
     bank: {
       accountHolderName: { type: String, default: '' },
       accountNumber: { type: String, default: '' },
