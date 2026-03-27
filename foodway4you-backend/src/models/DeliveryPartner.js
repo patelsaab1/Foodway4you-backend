@@ -8,7 +8,7 @@ const deliveryPartnerSchema = new mongoose.Schema({
   },
   vehicleType: {
     type: String,
-    enum: ['bike', 'car', 'bicycle'],
+    enum: ['bike', 'car', 'bicycle', 'scooter'],
     required: true
   },
   vehicleNumber: {
