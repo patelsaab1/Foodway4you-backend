@@ -8,6 +8,7 @@ import jwt from 'jsonwebtoken';
 import { getFirebaseAdmin } from '../config/firebase.js';
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
 
+
 const buildResetPasswordEmailHtml = ({ name, resetUrl }) => {
   const safeName = name || 'User';
   const safeUrl = resetUrl;
@@ -71,85 +72,85 @@ export const login = async (req, res, next) => {
     next(err);
   }
 };
-export const phoneLogin = async (req, res, next) => {
-  try {
-    const { idToken } = req.body;
-    const admin = getFirebaseAdmin();
+// export const phoneLogin = async (req, res, next) => {
+//   try {
+//     const { idToken } = req.body;
+//     const admin = getFirebaseAdmin();
 
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const verifiedPhone = decodedToken.phone_number; 
+//     const decodedToken = await admin.auth().verifyIdToken(idToken);
+//     const verifiedPhone = decodedToken.phone_number; 
 
-    if (!verifiedPhone) {
-      return response.error(res, 'Authentication failed: No phone number found', 401);
-    }
+//     if (!verifiedPhone) {
+//       return response.error(res, 'Authentication failed: No phone number found', 401);
+//     }
 
-    let user = await User.findOne({ phone: verifiedPhone });
+//     let user = await User.findOne({ phone: verifiedPhone });
 
-    if (!user) {
-      user = await User.create({
-        name: 'Guest User', 
-        phone: verifiedPhone, 
-        isVerified: true,
-        role: 'customer',
-        password: crypto.randomBytes(16).toString('hex'),
-      });
-    }
+//     if (!user) {
+//       user = await User.create({
+//         name: 'Guest User', 
+//         phone: verifiedPhone, 
+//         isVerified: true,
+//         role: 'customer',
+//         password: crypto.randomBytes(16).toString('hex'),
+//       });
+//     }
 
-    const { accessToken, refreshToken, expiresAt } = generateTokens(user.id);
-    user.refreshTokens.push({ token: refreshToken, expiresAt });
-    await user.save();
+//     const { accessToken, refreshToken, expiresAt } = generateTokens(user.id);
+//     user.refreshTokens.push({ token: refreshToken, expiresAt });
+//     await user.save();
 
-    response.success(res, { tokens: { accessToken, refreshToken }, user }, 'Login Successful');
+//     response.success(res, { tokens: { accessToken, refreshToken }, user }, 'Login Successful');
 
-  } catch (error) {
+//   } catch (error) {
   
-    console.error('Phone Login Error:', error);
+//     console.error('Phone Login Error:', error);
     
-    next(error); 
-  }
-};
-// ---------------- REFRESH ----------------
-export const refresh = async (req, res, next) => {
-  try {
-    const { refreshToken } = req.body;
-    if (!refreshToken) return response.error(res, 'Refresh token required', 400);
+//     next(error); 
+//   }
+// };
+// // ---------------- REFRESH ----------------
+// export const refresh = async (req, res, next) => {
+//   try {
+//     const { refreshToken } = req.body;
+//     if (!refreshToken) return response.error(res, 'Refresh token required', 400);
 
   
-    let payload;
-    try {
-      payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-    } catch {
-      return response.error(res, 'Invalid refresh token', 401);
-    }
+//     let payload;
+//     try {
+//       payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+//     } catch {
+//       return response.error(res, 'Invalid refresh token', 401);
+//     }
 
     
-    const user = await User.findOne({
-      _id: payload.id,
-      'refreshTokens.token': refreshToken,
-      'refreshTokens.expiresAt': { $gt: new Date() }
-    });
+//     const user = await User.findOne({
+//       _id: payload.id,
+//       'refreshTokens.token': refreshToken,
+//       'refreshTokens.expiresAt': { $gt: new Date() }
+//     });
 
-    if (!user) return response.error(res, 'Invalid or expired refresh token', 401);
-
-    
-    const { accessToken, refreshToken: newRefreshToken,expiresAt } = generateTokens(user.id);
+//     if (!user) return response.error(res, 'Invalid or expired refresh token', 401);
 
     
+//     const { accessToken, refreshToken: newRefreshToken,expiresAt } = generateTokens(user.id);
 
     
-    user.refreshTokens = user.refreshTokens.filter(t => t.token !== refreshToken);
-    user.refreshTokens.push({ token: newRefreshToken, expiresAt });
-    user.refreshTokens = user.refreshTokens.filter(t => t.expiresAt > new Date());
-    await user.save();
 
-    response.success(res, {
-      tokens: { accessToken, refreshToken: newRefreshToken }
-    }, 'Tokens refreshed');
+    
+//     user.refreshTokens = user.refreshTokens.filter(t => t.token !== refreshToken);
+//     user.refreshTokens.push({ token: newRefreshToken, expiresAt });
+//     user.refreshTokens = user.refreshTokens.filter(t => t.expiresAt > new Date());
+//     await user.save();
 
-  } catch (err) {
-    next(err);
-  }
-};
+//     response.success(res, {
+//       tokens: { accessToken, refreshToken: newRefreshToken }
+//     }, 'Tokens refreshed');
+
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
 
 export const forgotPassword = async (req, res, next) => {
@@ -167,7 +168,7 @@ export const forgotPassword = async (req, res, next) => {
     user.resetPasswordTokenUsedAt = null;
     await user.save();
 
-    const baseUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+    const baseUrl = process.env.CLIENT_URL || 'http://localhost:5000';
     const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
     const resetUrl = `${normalizedBaseUrl}/reset-password?token=${token}`;
 

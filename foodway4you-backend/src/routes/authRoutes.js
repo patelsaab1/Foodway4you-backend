@@ -12,9 +12,9 @@ const router = express.Router();
 router.post('/register', registerValidation, validate, ctrl.register);
 
 router.post('/login', loginValidation, validate, ctrl.login);
-//new route 
-router.post('/phone-login', ctrl.phoneLogin);
-router.post('/refresh', ctrl.refresh);
+// //new route 
+// router.post('/phone-login', ctrl.phoneLogin);
+// router.post('/refresh', ctrl.refresh);
 router.post('/forgot-password', [body('email').isEmail()], validate, ctrl.forgotPassword);
 router.post('/reset-password', [body('token').notEmpty(), body('password').isLength({ min: 6 })], validate, ctrl.resetPassword);
 router.get('/me', auth, cache({ namespace: 'auth', ttlSeconds: 10, varyByUser: true }), (req, res) => res.json({ user: req.user }));
