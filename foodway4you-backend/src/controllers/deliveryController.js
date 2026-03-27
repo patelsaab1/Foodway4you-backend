@@ -1,6 +1,37 @@
 import DeliveryPartner from '../models/DeliveryPartner.js';
 import response from '../utils/responseHelper.js';
 
+export const createDeliveryPartner = async (req, res, next) => {
+  try {
+
+    const partner = await DeliveryPartner.create({
+      user: req.user._id,   
+      vehicleType: req.body.vehicleType,
+      vehicleNumber: req.body.vehicleNumber,
+      drivingLicense: req.body.drivingLicense,
+      licenseExpiry: req.body.licenseExpiry,
+      currentLocation: {
+        latitude: req.body.currentLocation?.latitude,
+        longitude: req.body.currentLocation?.longitude
+      },
+      documents: {
+        licenseImage: req.body.documents?.licenseImage,
+        vehicleImage: req.body.documents?.vehicleImage,
+        profileImage: req.body.documents?.profileImage
+      }
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Delivery partner created successfully",
+      data: partner
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const profile = async (req, res, next) => {
   try {
     const doc = await DeliveryPartner.findOne({ user: req.user.id });
@@ -23,3 +54,13 @@ export const updateLocation = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getAll = async(req,res,next) => {
+  try{
+    const all = await DeliveryPartner.find({}, "currentLocation user");
+    response.success(res, all, "All riders location")
+  }
+  catch(error){
+    next(error)
+  }
+}
