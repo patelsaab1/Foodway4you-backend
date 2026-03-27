@@ -7,6 +7,7 @@ import { send as sendEmail } from '../services/emailService.js';
 
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
 
+
 const buildResetPasswordEmailHtml = ({ name, resetUrl }) => {
   const safeName = name || 'User';
   const safeUrl = resetUrl;
@@ -89,7 +90,7 @@ export const forgotPassword = async (req, res, next) => {
     user.resetPasswordTokenUsedAt = null;
     await user.save();
 
-    const baseUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+    const baseUrl = process.env.CLIENT_URL || 'http://localhost:5000';
     const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
     const resetUrl = `${normalizedBaseUrl}/reset-password?token=${token}`;
 
