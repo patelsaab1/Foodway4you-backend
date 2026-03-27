@@ -102,10 +102,9 @@ export const phoneLogin = async (req, res, next) => {
     response.success(res, { tokens: { accessToken, refreshToken }, user }, 'Login Successful');
 
   } catch (error) {
-    // Yahan dhyan do! 
+  
     console.error('Phone Login Error:', error);
     
-    // Ye line error ko aapke central errorHandler.js tak bhejti hai
     next(error); 
   }
 };
@@ -235,48 +234,3 @@ export const updateProfile = async (req, res, next) => {
 };
 
 
-export const googleLogin = async (req, res, next) => {
-  try {
-    const { idToken } = req.body;
-    const admin = getFirebaseAdmin();
-
-    if (!admin) {
-      return response.error(res, 'Firebase connection failed', 500);
-    }
-
-    
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const { email, name, picture, uid } = decodedToken;
-
-    
-    let user = await User.findOne({ email });
-
-    if (!user) {
-      
-      user = await User.create({
-        name,
-        email,
-        avatar: picture,
-        isVerified: true,
-        password: Math.random().toString(36).slice(-10), 
-        phone: `google_${uid.slice(0, 10)}`, 
-      });
-    }
-
-    
-    const { accessToken, refreshToken, expiresAt } = generateTokens(user.id);
-
-    
-    user.refreshTokens.push({ token: refreshToken, expiresAt });
-    await user.save();
-
-    response.success(res, {
-      tokens: { accessToken, refreshToken },
-      user: { id: user.id, role: user.role, name: user.name,email:user.email }
-    }, 'Google Login Successful');
-
-  } catch (error) {
-    console.error('Google Auth Error:', error);
-    return response.error(res, 'Invalid or expired Google token', 401);
-  }
-};
