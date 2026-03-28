@@ -5,33 +5,30 @@ const authMiddleware = async (req, res, next) => {
   try {
     const authHeader = req.header('Authorization');
 
-    //  Check header
-    console.log("HEADER:", authHeader);
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         success: false,
-        message: 'No token provided'
+        message: 'Authentication token is missing. Please login.'
       });
     }
 
-    
+    // 🔑 Extract token
     const token = authHeader.replace('Bearer ', '');
-    console.log("TOKEN:", token);
 
-    //  Verify token
+    // 🔥 Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log("DECODED:", decoded);
 
-    //  Find user
+    // 👤 Find user
     const user = await User.findById(decoded.id).select('-password');
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'User not found'
+        message: 'The requested user could not be found.'
       });
     }
-
+console.log("AUTH USER:", user);
     if (!user.isActive) {
       return res.status(401).json({
         success: false,
@@ -48,7 +45,7 @@ const authMiddleware = async (req, res, next) => {
 
     return res.status(401).json({
       success: false,
-      message: 'Token is not valid'
+      message: 'Invalid authentication token.'
     });
   }
 };
