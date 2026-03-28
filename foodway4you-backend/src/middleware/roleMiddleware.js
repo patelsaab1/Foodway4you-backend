@@ -6,7 +6,7 @@ const roleMiddleware = (roles) => {
         message: 'Authentication required'
       });
     }
-
+console.log("ROLE CHECK - USER ROLE:", req.user.role, "REQUIRED ROLES:", roles);
     const userRole = req.user.role;
     
     if (!roles.includes(userRole)) {
