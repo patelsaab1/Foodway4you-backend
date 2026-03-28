@@ -5,7 +5,7 @@ const authMiddleware = async (req, res, next) => {
   try {
     const authHeader = req.header('Authorization');
 
-    // 🔍 Check header
+    //  Check header
     console.log("HEADER:", authHeader);
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -15,15 +15,15 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
-    // 🔑 Extract token
+    
     const token = authHeader.replace('Bearer ', '');
     console.log("TOKEN:", token);
 
-    // 🔥 Verify token
+    //  Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log("DECODED:", decoded);
 
-    // 👤 Find user
+    //  Find user
     const user = await User.findById(decoded.id).select('-password');
     if (!user) {
       return res.status(401).json({
