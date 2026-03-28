@@ -57,9 +57,9 @@ export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (!user) return response.error(res, 'Invalid credentials', 401);
+    if (!user) return response.error(res, 'Email or password is incorrect.', 401);
     const match = await user.matchPassword(password);
-    if (!match) return response.error(res, 'Invalid credentials', 401);
+    if (!match) return response.error(res, 'Email or password is incorrect.', 401);
          
     const { accessToken, refreshToken,expiresAt } = generateTokens(user.id);
 
