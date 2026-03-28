@@ -271,3 +271,25 @@ export const firebaseAuth = async (req, res, next) => {
     return response.error(res, 'Invalid or expired Firebase token', 401);
   }
 };
+
+// ---------------- LOGOUT ----------------
+export const logout = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return response.error(res, 'Refresh token is required for logout', 400);
+    }
+
+    // User ke refreshTokens array se current token ko remove karein
+    const user = await User.findById(req.user.id);
+    if (user) {
+      user.refreshTokens = user.refreshTokens.filter(t => t.token !== refreshToken);
+      await user.save();
+    }
+
+    response.success(res, null, 'Logged out successfully');
+  } catch (err) {
+    next(err);
+  }
+};
