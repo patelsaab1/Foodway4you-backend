@@ -5,8 +5,6 @@ const authMiddleware = async (req, res, next) => {
   try {
     const authHeader = req.header('Authorization');
 
-    // 🔍 Check header
-    console.log("HEADER:", authHeader);
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
@@ -17,7 +15,6 @@ const authMiddleware = async (req, res, next) => {
 
     // 🔑 Extract token
     const token = authHeader.replace('Bearer ', '');
-    console.log("TOKEN:", token);
 
     // 🔥 Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -31,7 +28,7 @@ const authMiddleware = async (req, res, next) => {
         message: 'The requested user could not be found.'
       });
     }
-
+console.log("AUTH USER:", user);
     if (!user.isActive) {
       return res.status(401).json({
         success: false,

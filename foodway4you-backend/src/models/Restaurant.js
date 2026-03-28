@@ -1,87 +1,134 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const restaurantSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  description: {
-    type: String,
-    required: true
-  },
-  owner: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  address: {
-    street: { type: String, required: true },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    zipCode: { type: String, required: true },
-    coordinates: {
-      latitude: { type: Number, required: true },
-      longitude: { type: Number, required: true }
-    }
-  },
-  cuisine: [{
-    type: String,
-    required: true
-  }],
-  rating: {
-    average: { type: Number, default: 0 },
-    count: { type: Number, default: 0 }
-  },
-  contact: {
-    phone: { type: String, required: true },
-    email: { type: String, required: true }
-  },
-  images: [{
-    type: String
-  }],
-  logo: {
-    type: String
-  },
-  openingHours: [{
-    day: { type: String, enum: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] },
-    open: { type: String, required: true },
-    close: { type: String, required: true },
-    isClosed: { type: Boolean, default: false }
-  }],
-  status: {
-    type: String,
-    enum: ['active', 'inactive', 'suspended'],
-    default: 'active'
-  },
-  isVerified: {
-    type: Boolean,
-    default: false
-  },
-  deliveryFee: {
-    type: Number,
-    default: 0
-  },
-  minimumOrder: {
-    type: Number,
-    default: 0
-  },
-  estimatedDeliveryTime: {
-    type: Number,
-    default: 30
-  },
-  onboarding: {
-    status: {
+const restaurantSchema = new mongoose.Schema(
+  {
+    // Basic Info
+    name: {
       type: String,
-      enum: ['pending', 'submitted', 'verified', 'rejected'],
-      default: 'pending'
+      required: true,
+      trim: true,
     },
-    submittedAt: { type: Date, default: null },
-    verifiedAt: { type: Date, default: null },
-    rejectedAt: { type: Date, default: null },
-    rejectionReason: { type: String, default: '' }
 
+    description: {
+      type: String,
+    },
+
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    // Address (Readable)
+    address: {
+      street: String,
+      city: String,
+      state: String,
+      zipCode: String,
+    },
+
+    // 🔥 GEO LOCATION (IMPORTANT)
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: true,
+      },
+    },
+
+    // Cuisine
+    cuisine: [String],
+
+    // Contact
+    contact: {
+      phone: String,
+      email: String,
+    },
+
+    // Media
+    images: [String],
+    logo: String,
+
+    // Opening Hours
+    openingHours: [
+      {
+        day: {
+          type: String,
+          enum: [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday",
+          ],
+        },
+        open: String,
+        close: String,
+        isClosed: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    ],
+
+    // Delivery
+    deliveryFee: {
+      type: Number,
+      default: 0,
+    },
+
+    minimumOrder: Number,
+    estimatedDeliveryTime: Number,
+
+    // Ratings (future use)
+    rating: {
+      type: Number,
+      default: 0,
+    },
+
+    totalReviews: {
+      type: Number,
+      default: 0,
+    },
+
+    // Status
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+
+    // 🔥 KYC (Production Ready)
+    kyc: {
+      businessType: String,
+      legalName: String,
+      gstNumber: String,
+      panNumber: String,
+      fssaiNumber: String,
+
+      documents: {
+        panUrl: String,
+        gstUrl: String,
+        fssaiUrl: String,
+        cancelledChequeUrl: String,
+        userPhotoUrl: String,
+        restaurantPhotoUrl: String,
+        signatureUrl: String,
+      },
+
+      bank: {
+        accountHolderName: String,
+        accountNumber: String,
+        ifscCode: String,
+      },
+    },
   },
+<<<<<<< HEAD
   // comment test
   kyc: {
     businessType: { type: String, enum: ['proprietorship', 'partnership', 'pvt-ltd', 'llp', 'other'], default: 'other' },
@@ -89,25 +136,12 @@ const restaurantSchema = new mongoose.Schema({
     gstNumber: { type: String, default: '' },
     panNumber: { type: String, default: '' },
     fssaiNumber: { type: String, default: '' },
+=======
+  { timestamps: true }
+);
+>>>>>>> c7a52d4c5aeeb588c7b1e01168323996c490064f
 
-    documents: {
-      panUrl: { type: String, default: '' },
-      gstUrl: { type: String, default: '' },
-      fssaiUrl: { type: String, default: '' },
-      cancelledChequeUrl: { type: String, default: '' },
-      userPhotoUrl: { type: String, default: '' },
-      restaurantPhotoUrl: { type: String, default: '' },
-      signatureUrl: { type: String, default: '' },
-    },
-    
-    bank: {
-      accountHolderName: { type: String, default: '' },
-      accountNumber: { type: String, default: '' },
-      ifscCode: { type: String, default: '' }
-    }
-  }
-}, {
-  timestamps: true
-});
+// 🔥 GEO INDEX (VERY IMPORTANT)
+restaurantSchema.index({ location: "2dsphere" });
 
-export default mongoose.model('Restaurant', restaurantSchema);
+export default mongoose.model("Restaurant", restaurantSchema);
