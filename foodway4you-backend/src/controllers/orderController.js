@@ -21,8 +21,6 @@ export const track = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-
-  
 };
 
 export const updateStatus = async (req, res, next) => {

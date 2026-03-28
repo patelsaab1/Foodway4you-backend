@@ -21,9 +21,9 @@ const menuItemSchema = new mongoose.Schema({
     min: 0
   },
   category: {
-    type: String,
-    required: true,
-    enum: ['starter', 'main-course', 'dessert', 'beverage', 'snack', 'combo']
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    required: true
   },
   cuisine: {
     type: String,

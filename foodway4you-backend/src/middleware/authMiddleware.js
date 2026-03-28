@@ -11,7 +11,7 @@ const authMiddleware = async (req, res, next) => {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         success: false,
-        message: 'No token provided'
+        message: 'Authentication token is missing. Please login.'
       });
     }
 
@@ -28,7 +28,7 @@ const authMiddleware = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'User not found'
+        message: 'The requested user could not be found.'
       });
     }
 
@@ -48,7 +48,7 @@ const authMiddleware = async (req, res, next) => {
 
     return res.status(401).json({
       success: false,
-      message: 'Token is not valid'
+      message: 'Invalid authentication token.'
     });
   }
 };
