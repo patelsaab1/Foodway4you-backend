@@ -14,7 +14,6 @@ const getRazorpay = () => {
     key_id: keyId,
     key_secret: keySecret,
   });
-
   return client;
 };
 

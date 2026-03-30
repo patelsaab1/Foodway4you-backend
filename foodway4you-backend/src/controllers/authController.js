@@ -4,7 +4,8 @@ import generateTokens from '../utils/generateToken.js';
 import generateOTP from '../utils/generateOTP.js';
 import response from '../utils/responseHelper.js';
 import { send as sendEmail } from '../services/emailService.js';
-
+import jwt from 'jsonwebtoken';
+import { getFirebaseAdmin } from '../config/firebase.js';
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
 
 const buildResetPasswordEmailHtml = ({ name, resetUrl }) => {
@@ -59,16 +60,56 @@ export const login = async (req, res, next) => {
     if (!user) return response.error(res, 'Invalid credentials', 401);
     const match = await user.matchPassword(password);
     if (!match) return response.error(res, 'Invalid credentials', 401);
-    const tokens = generateTokens(user.id);
-    response.success(res, { tokens, user: { id: user.id, role: user.role } }, 'Logged in');
+         
+    const { accessToken, refreshToken,expiresAt } = generateTokens(user.id);
+
+    
+    user.refreshTokens.push({ token: refreshToken, expiresAt });
+    await user.save();
+    response.success(res, { tokens:{ accessToken, refreshToken}, user: { id: user.id, role: user.role } }, 'Logged in');
   } catch (err) {
     next(err);
   }
 };
 
+// ---------------- REFRESH ----------------
 export const refresh = async (req, res, next) => {
   try {
-    response.error(res, 'Not implemented', 501);
+    const { refreshToken } = req.body;
+    if (!refreshToken) return response.error(res, 'Refresh token required', 400);
+
+  
+    let payload;
+    try {
+      payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    } catch {
+      return response.error(res, 'Invalid refresh token', 401);
+    }
+
+    
+    const user = await User.findOne({
+      _id: payload.id,
+      'refreshTokens.token': refreshToken,
+      'refreshTokens.expiresAt': { $gt: new Date() }
+    });
+
+    if (!user) return response.error(res, 'Invalid or expired refresh token', 401);
+
+    
+    const { accessToken, refreshToken: newRefreshToken,expiresAt } = generateTokens(user.id);
+
+    
+
+    
+    user.refreshTokens = user.refreshTokens.filter(t => t.token !== refreshToken);
+    user.refreshTokens.push({ token: newRefreshToken, expiresAt });
+    user.refreshTokens = user.refreshTokens.filter(t => t.expiresAt > new Date());
+    await user.save();
+
+    response.success(res, {
+      tokens: { accessToken, refreshToken: newRefreshToken }
+    }, 'Tokens refreshed');
+
   } catch (err) {
     next(err);
   }
@@ -131,26 +172,102 @@ export const resetPassword = async (req, res, next) => {
 
 export const updateProfile = async (req, res, next) => {
   try {
-    const { name, phone, avatar, fcmToken } = req.body;
+    const { name, phone, email, avatar, fcmToken } = req.body;
+    const userId = req.user.id;
 
+    // 1. Check for Duplicate Phone (agar phone update ho raha hai)
     if (phone && phone !== req.user.phone) {
-      const exists = await User.findOne({ phone });
-      if (exists) return response.error(res, 'Phone already in use', 400);
+      const phoneExists = await User.findOne({ phone, _id: { $ne: userId } });
+      if (phoneExists) return response.error(res, 'Phone number already in use by another account', 400);
     }
 
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      {
-        ...(name !== undefined && { name }),
-        ...(phone !== undefined && { phone }),
-        ...(avatar !== undefined && { avatar }),
-        ...(fcmToken !== undefined && { fcmToken }),
-      },
-      { new: true, runValidators: true, select: '-password' }
+    // 2. Check for Duplicate Email (agar email update ho raha hai)
+    if (email && email !== req.user.email) {
+      const emailExists = await User.findOne({ email, _id: { $ne: userId } });
+      if (emailExists) return response.error(res, 'Email already in use by another account', 400);
+    }
+
+    // 3. Build update object (Sirf wahi fields update karein jo user ne bheji hain)
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (phone !== undefined) updateData.phone = phone;
+    if (email !== undefined) updateData.email = email;
+    if (avatar !== undefined) updateData.avatar = avatar;
+    if (fcmToken !== undefined) updateData.fcmToken = fcmToken;
+
+    // 4. Update the User
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      { 
+        new: true,           // updated document return karega
+        runValidators: true, // Schema validations check karega
+        select: '-password -refreshTokens' // Sensitive data hata dega
+      }
     );
 
-    return response.success(res, { user }, 'Profile updated');
+    if (!updatedUser) {
+      return response.error(res, 'User not found', 404);
+    }
+
+    return response.success(res, { user: updatedUser }, 'Profile updated successfully');
   } catch (err) {
     next(err);
+  }
+};
+
+
+
+export const firebaseAuth = async (req, res, next) => {
+  try {
+    const { idToken } = req.body;
+    const admin = getFirebaseAdmin();
+
+    if (!admin) {
+      return response.error(res, 'Firebase connection failed', 500);
+    }
+
+    
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    
+    
+    const { email, name, picture, uid, phone_number } = decodedToken;
+
+    
+    let user = await User.findOne({
+      $or: [
+        { email: email || 'never-match-email@null.com' },
+        { phone: phone_number || 'never-match-phone' }
+      ]
+    });
+
+    
+    if (!user) {
+      user = await User.create({
+        name: name || `User_${uid.slice(-4)}`,
+        email: email || null,
+        phone: phone_number || null,
+        avatar: picture || null,
+        isVerified: true,
+        password: crypto.randomBytes(16).toString('hex'), 
+      
+      });
+    }
+
+    
+    const { accessToken, refreshToken, expiresAt } = generateTokens(user.id);
+
+   
+    user.refreshTokens.push({ token: refreshToken, expiresAt });
+    await user.save();
+
+    response.success(res, {
+      tokens: { accessToken, refreshToken },
+      user: { id: user.id, role: user.role, name: user.name, email: user.email, phone: user.phone }
+    }, 'Firebase Authentication Successful');
+
+  } catch (error) {
+    console.error('Firebase Auth Error:', error);
+    return response.error(res, 'Invalid or expired Firebase token', 401);
   }
 };

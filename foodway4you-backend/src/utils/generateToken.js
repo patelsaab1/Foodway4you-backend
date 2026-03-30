@@ -10,10 +10,13 @@ const generateTokens = (userId) => {
   const refreshToken = jwt.sign(
     { id: userId },
     process.env.JWT_REFRESH_SECRET,
-    { expiresIn: process.env.JWT_REFRESH_EXPIRE || '7d' }
-  );
+     { expiresIn:  process.env.JWT_REFRESH_EXPIRE || '7d'}
 
-  return { accessToken, refreshToken };
+  );
+  const days = parseInt(process.env.JWT_REFRESH_EXPIRE_DAYS, 10) || 7;
+  const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+
+  return { accessToken, refreshToken,expiresAt };
 };
 
 export default generateTokens;

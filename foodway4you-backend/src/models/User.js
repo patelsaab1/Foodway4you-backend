@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
+    // required: true,
     unique: true,
     lowercase: true
   },
@@ -63,7 +63,14 @@ const userSchema = new mongoose.Schema({
   fcmToken: {
     type: String,
     default: null
+  },
+  
+refreshTokens: [
+  {
+    token: { type: String, required: true },
+    expiresAt: { type: Date, required: true }
   }
+]
 }, {
   timestamps: true
 });

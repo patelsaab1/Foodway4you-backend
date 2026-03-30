@@ -2,16 +2,20 @@ import express from 'express';
 import { body } from 'express-validator';
 import auth from '../middleware/authMiddleware.js';
 import validate from '../middleware/validate.js';
-import { registerValidation,loginValidation } from '../middleware/authValidationMiddleware.js';
+import * as authVal from '../middleware/authValidationMiddleware.js';
 
 import { cache } from '../middleware/cacheMiddleware.js';
 import * as ctrl from '../controllers/authController.js';
 
 const router = express.Router();
 
-router.post('/register', registerValidation, validate, ctrl.register);
+router.post('/register', authVal.registerValidation, validate, ctrl.register);
 
-router.post('/login', loginValidation, validate, ctrl.login);
+router.post('/login', authVal.loginValidation, validate, ctrl.login);
+//new route
+router.post('/firebase-login', ctrl.firebaseAuth);
+
+
 router.post('/refresh', ctrl.refresh);
 router.post('/forgot-password', [body('email').isEmail()], validate, ctrl.forgotPassword);
 router.post('/reset-password', [body('token').notEmpty(), body('password').isLength({ min: 6 })], validate, ctrl.resetPassword);
@@ -19,11 +23,9 @@ router.get('/me', auth, cache({ namespace: 'auth', ttlSeconds: 10, varyByUser: t
 router.patch(
   '/me',
   auth,
-  [body('name').optional().isString(), body('phone').optional().isString(), body('avatar').optional().isString(), body('fcmToken').optional().isString()],
+  authVal.updateProfileValidation, // Yahan "authVal" namespace use ho raha hai
   validate,
   ctrl.updateProfile
 );
-
-
 
 export default router;
