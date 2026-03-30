@@ -64,6 +64,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  deviceName: {
+  type: String,
+  default: null
+},
   
 refreshTokens: [
   {

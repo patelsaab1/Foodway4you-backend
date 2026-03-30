@@ -23,10 +23,10 @@ router.get('/me', auth, cache({ namespace: 'auth', ttlSeconds: 10, varyByUser: t
 router.patch(
   '/me',
   auth,
-  authVal.updateProfileValidation, // Yahan "authVal" namespace use ho raha hai
+  authVal.updateProfileValidation, 
   validate,
   ctrl.updateProfile
 );
-// Is line ko routes file mein add karein
+
 router.post('/logout', auth, ctrl.logout);
 export default router;

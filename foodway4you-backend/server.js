@@ -24,6 +24,7 @@ import couponRoutes from './src/routes/couponRoutes.js';
 import adminRoutes from './src/routes/adminRoutes.js';
 import notificationRoutes from "./src/routes/notificationRoutes.js";
 import categoryRoutes from "./src/routes/categoryRoutes.js";
+import adminRestaurantRoutes from './src/routes/adminRestaurantRoutes.js'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,6 +62,9 @@ app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/reviews', reviewRoutes);
 app.use('/api/v1/coupons', couponRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/admin', adminRestaurantRoutes);
+
+
 app.use("/api/v1/notification",notificationRoutes);
 app.use("/api/v1/category", categoryRoutes);
 
