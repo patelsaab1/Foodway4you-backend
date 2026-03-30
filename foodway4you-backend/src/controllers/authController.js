@@ -59,15 +59,11 @@ export const login = async (req, res, next) => {
     const user = await User.findOne({ email });
     if (!user) return response.error(res, 'Invalid credentials', 401);
     const match = await user.matchPassword(password);
-<<<<<<< HEAD
+
     if (!match) return response.error(res, 'Email or password is incorrect.', 401);
     if (!user.isActive) {
       return response.error(res, "Your account is blocked", 403);
-    }
-=======
-    if (!match) return response.error(res, 'Invalid credentials', 401);
->>>>>>> 41ede4124f860d54b79bdc2edcfeddae5fe588f5
-         
+    }    if (!match) return response.error(res, 'Invalid credentials', 401);         
     const { accessToken, refreshToken,expiresAt } = generateTokens(user.id);
 
     
