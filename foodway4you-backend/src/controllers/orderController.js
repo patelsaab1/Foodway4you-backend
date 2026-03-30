@@ -8,7 +8,7 @@ const BASE_DELIVERY_FEE = 40;
 const MAX_FREE_KM = 5;
 const EXTRA_CHARGE_PER_KM = 8;
 
-// ====================== PLACE ORDER ======================
+// ====================== PLACE ORDER CHANGES ======================
 export const place = async (req, res, next) => {
   try {
     let { 
