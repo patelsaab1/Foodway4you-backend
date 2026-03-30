@@ -27,5 +27,6 @@ router.patch(
   validate,
   ctrl.updateProfile
 );
-
+// Is line ko routes file mein add karein
+router.post('/logout', auth, ctrl.logout);
 export default router;

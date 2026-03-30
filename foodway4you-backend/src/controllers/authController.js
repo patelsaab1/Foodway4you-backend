@@ -57,12 +57,9 @@ export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (!user) return response.error(res, 'Invalid credentials', 401);
+    if (!user) return response.error(res, 'Email or password is incorrect.', 401);
     const match = await user.matchPassword(password);
     if (!match) return response.error(res, 'Invalid credentials', 401);
-    if (!user.isActive) {
-      return response.error(res, "Your account is blocked", 403);
-    }
          
     const { accessToken, refreshToken,expiresAt } = generateTokens(user.id);
 
@@ -272,5 +269,27 @@ export const firebaseAuth = async (req, res, next) => {
   } catch (error) {
     console.error('Firebase Auth Error:', error);
     return response.error(res, 'Invalid or expired Firebase token', 401);
+  }
+};
+
+// ---------------- LOGOUT ----------------
+export const logout = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return response.error(res, 'Refresh token is required for logout', 400);
+    }
+
+    // User ke refreshTokens array se current token ko remove karein
+    const user = await User.findById(req.user.id);
+    if (user) {
+      user.refreshTokens = user.refreshTokens.filter(t => t.token !== refreshToken);
+      await user.save();
+    }
+
+    response.success(res, null, 'Logged out successfully');
+  } catch (err) {
+    next(err);
   }
 };
