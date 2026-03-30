@@ -36,9 +36,10 @@ const io = new Server(server, {
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   },
-});
+}); 
 
 socketHandler(io);
+app.set("io",io);
 
 app.use(helmet());
 app.use(cors());
