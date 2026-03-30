@@ -8,6 +8,14 @@ export const create = async (req, res, next) => {
   try {
     const data = { ...req.body, owner: req.user.id };
     const doc = await Restaurant.create(data);
+
+    // applying socketio
+    const io = req.app.get("io");
+    io.emit("restaurant:new",{
+      restaurantId:doc._id,
+      name: doc.name
+    });
+
     response.success(res, doc, 'Created', 201);
   } catch (err) {
     next(err);
@@ -79,6 +87,12 @@ export const submitKyc = async (req, res, next) => {
     };
 
     await restaurant.save();
+    // socketio
+    const io = req.app.get("io");
+    io.emit("restaurant:kycSubmitted", {
+      restaurantId: restaurant._id,
+      owner: restaurant.owner
+    });
     return response.success(res, restaurant, 'KYC submitted');
   } catch (err) {
     next(err);
