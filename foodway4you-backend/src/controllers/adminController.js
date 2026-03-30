@@ -83,7 +83,7 @@ export const toggleUserStatus = async (req, res, next) => {
   }
 };
 
-// ✅ 4. Delete User
+//  4. Delete User
 export const deleteUser = async (req, res, next) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id);

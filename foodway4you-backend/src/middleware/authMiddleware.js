@@ -9,14 +9,14 @@ const authMiddleware = async (req, res, next) => {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication token is missing. Please login.'
+        message: 'No token provided'
       });
     }
 
-    // 🔑 Extract token
+    //  Extract token
     const token = authHeader.replace('Bearer ', '');
 
-    // 🔥 Verify token
+    //  Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log("DECODED:", decoded);
 
@@ -25,7 +25,7 @@ const authMiddleware = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'The requested user could not be found.'
+        message: 'User not found'
       });
     }
 console.log("AUTH USER:", user);
@@ -45,7 +45,7 @@ console.log("AUTH USER:", user);
 
     return res.status(401).json({
       success: false,
-      message: 'Invalid authentication token.'
+      message: 'Token is not valid'
     });
   }
 };

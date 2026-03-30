@@ -10,9 +10,8 @@ import * as ctrl from '../controllers/authController.js';
 const router = express.Router();
 
 router.post('/register', authVal.registerValidation, validate, ctrl.register);
-
 router.post('/login', authVal.loginValidation, validate, ctrl.login);
-//new route
+
 router.post('/firebase-login', ctrl.firebaseAuth);
 
 
@@ -28,5 +27,5 @@ router.patch(
   ctrl.updateProfile
 );
 
-router.post('/logout', auth, ctrl.logout);
+
 export default router;

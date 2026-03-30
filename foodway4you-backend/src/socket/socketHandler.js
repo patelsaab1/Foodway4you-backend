@@ -1,5 +1,6 @@
 export default (io) => {
   io.on('connection', (socket) => {
+    // console.log("socket working : ",socket.id);
     socket.on('join', (room) => {
       if (room) socket.join(room);
     });

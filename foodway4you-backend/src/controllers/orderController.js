@@ -124,6 +124,12 @@ export const place = async (req, res, next) => {
       )
     });
 
+    const io = req.app.get("io");  
+    io.emit("order:new", {
+      orderId: newOrder._id,
+      restaurant: restaurantId
+    });
+
     return response.success(
       res,
       {
@@ -172,6 +178,12 @@ export const updateStatus = async (req, res, next) => {
     );
 
     if (!doc) return response.error(res, "Order not found", 404);
+    
+    const io = req.app.get("io");
+    io.to(`order:${doc._id}`).emit("order:status", {
+      orderId: doc._id,
+      status: doc.status
+    });
 
     response.success(res, doc, 'Order status updated');
   } catch (err) {

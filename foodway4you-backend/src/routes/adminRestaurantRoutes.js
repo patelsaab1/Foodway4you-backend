@@ -7,7 +7,7 @@ import * as ctrl from "../controllers/adminRestaurantController.js";
 
 const router = express.Router();
 
-// ✅ Get all restaurants
+//  Get all restaurants
 router.get(
   "/restaurants",
   auth,
@@ -16,7 +16,7 @@ router.get(
   ctrl.getAllRestaurants
 );
 
-// ✅ Approve / Reject
+//  Approve / Reject
 router.put(
   "/restaurants/:id/status",
   auth,
@@ -24,7 +24,7 @@ router.put(
   ctrl.updateRestaurantStatus
 );
 
-// ✅ Block / Unblock
+//  Block / Unblock
 router.put(
   "/restaurants/:id/toggle-block",
   auth,

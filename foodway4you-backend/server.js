@@ -23,8 +23,8 @@ import reviewRoutes from './src/routes/reviewRoutes.js';
 import couponRoutes from './src/routes/couponRoutes.js';
 import adminRoutes from './src/routes/adminRoutes.js';
 import notificationRoutes from "./src/routes/notificationRoutes.js";
-import categoryRoutes from "./src/routes/categoryRoutes.js";
 import adminRestaurantRoutes from './src/routes/adminRestaurantRoutes.js'
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,9 +38,10 @@ const io = new Server(server, {
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   },
-});
+}); 
 
 socketHandler(io);
+app.set("io",io);
 
 app.use(helmet());
 app.use(cors());
@@ -66,7 +67,6 @@ app.use('/api/v1/admin', adminRestaurantRoutes);
 
 
 app.use("/api/v1/notification",notificationRoutes);
-app.use("/api/v1/category", categoryRoutes);
 
 app.use(errorHandler);
 

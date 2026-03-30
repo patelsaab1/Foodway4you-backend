@@ -8,12 +8,12 @@ export const getAllRestaurants = async (req, res, next) => {
 
     let filter = {};
 
-    // 🔍 Search by name
+    //  Search by name
     if (search) {
       filter.name = { $regex: search, $options: "i" };
     }
 
-    // 🔥 Filter by active/block
+    //  Filter by active/block
     if (status === "active") filter.isActive = true;
     if (status === "blocked") filter.isActive = false;
 
@@ -42,7 +42,7 @@ export const updateRestaurantStatus = async (req, res, next) => {
     const restaurant = await Restaurant.findById(req.params.id);
     if (!restaurant) return response.notFound(res, "Restaurant not found");
 
-    // 🔥 onboarding object ensure
+    //  onboarding object ensure
     restaurant.onboarding = {
       ...restaurant.onboarding,
       status,
