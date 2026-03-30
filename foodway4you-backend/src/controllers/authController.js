@@ -60,6 +60,9 @@ export const login = async (req, res, next) => {
     if (!user) return response.error(res, 'Invalid credentials', 401);
     const match = await user.matchPassword(password);
     if (!match) return response.error(res, 'Invalid credentials', 401);
+    if (!user.isActive) {
+      return response.error(res, "Your account is blocked", 403);
+    }
          
     const { accessToken, refreshToken,expiresAt } = generateTokens(user.id);
 
