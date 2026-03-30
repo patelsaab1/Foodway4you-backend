@@ -3,7 +3,7 @@ const roleMiddleware = (roles) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: 'You need to login first to continue.'
       });
     }
 console.log("ROLE CHECK - USER ROLE:", req.user.role, "REQUIRED ROLES:", roles);
@@ -12,7 +12,7 @@ console.log("ROLE CHECK - USER ROLE:", req.user.role, "REQUIRED ROLES:", roles);
     if (!roles.includes(userRole)) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Insufficient permissions'
+        message: 'Only Admin and Restaurant can create Restaurant.'
       });
     }
 
