@@ -3,7 +3,7 @@ const roleMiddleware = (roles) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: 'Login First...'
       });
     }
 console.log("ROLE CHECK - USER ROLE:", req.user.role, "REQUIRED ROLES:", roles);
@@ -12,7 +12,7 @@ console.log("ROLE CHECK - USER ROLE:", req.user.role, "REQUIRED ROLES:", roles);
     if (!roles.includes(userRole)) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Insufficient permissions'
+        message: 'Authorized person can see Sensitive Data.'
       });
     }
 

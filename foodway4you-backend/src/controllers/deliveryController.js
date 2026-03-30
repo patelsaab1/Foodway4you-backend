@@ -21,6 +21,12 @@ export const createDeliveryPartner = async (req, res, next) => {
       }
     });
 
+const io = req.app.get("io");
+    io.emit("deliveryPartner:new", {
+      partnerId: partner._id,
+      user: partner.user
+    });
+
     res.status(201).json({
       success: true,
       message: "Delivery partner created successfully",
@@ -49,6 +55,14 @@ export const updateLocation = async (req, res, next) => {
       { currentLocation: { latitude, longitude } },
       { new: true }
     );
+
+    // socketio
+    const io = req.app.get("io");
+    io.emit("delivery:locationUpdate", {
+      partnerId: doc._id,
+      location: doc.currentLocation
+    });
+    
     response.success(res, doc, 'Location updated');
   } catch (err) {
     next(err);

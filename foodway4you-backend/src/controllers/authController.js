@@ -65,7 +65,6 @@ export const login = async (req, res, next) => {
       return response.error(res, "Your account is blocked", 403);
     }
 
-    if (!match) return response.error(res, 'Invalid credentials', 401);
          
     const { accessToken, refreshToken,expiresAt } = generateTokens(user.id);
 
