@@ -60,14 +60,19 @@ export const login = async (req, res, next) => {
     if (!user) return response.error(res, 'Invalid credentials', 401);
     const match = await user.matchPassword(password);
 <<<<<<< HEAD
+
+    if (!match) return response.error(res, 'Email or password is incorrect.', 401);
+    if (!user.isActive) {
+      return response.error(res, "Your account is blocked", 403);
+    }    if (!match) return response.error(res, 'Invalid credentials', 401);         
+=======
     if (!match) return response.error(res, 'Email or password is incorrect.', 401);
     if (!user.isActive) {
       return response.error(res, "Your account is blocked", 403);
     }
-=======
     if (!match) return response.error(res, 'Invalid credentials', 401);
->>>>>>> 41ede4124f860d54b79bdc2edcfeddae5fe588f5
          
+>>>>>>> 20cf1177f1717fc087624b427520b2c7317310cf
     const { accessToken, refreshToken,expiresAt } = generateTokens(user.id);
 
     

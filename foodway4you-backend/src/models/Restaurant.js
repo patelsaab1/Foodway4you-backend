@@ -129,9 +129,11 @@ const restaurantSchema = new mongoose.Schema(
     },
   },
 <<<<<<< HEAD
-=======
+
   { timestamps: true }
->>>>>>> 41ede4124f860d54b79bdc2edcfeddae5fe588f5
+
+=======
+>>>>>>> 20cf1177f1717fc087624b427520b2c7317310cf
 );
 
 // 🔥 GEO INDEX (VERY IMPORTANT)
