@@ -86,7 +86,7 @@ const restaurantSchema = new mongoose.Schema(
     minimumOrder: Number,
     estimatedDeliveryTime: Number,
 
-    // Ratings
+    // Ratings (future use)
     rating: {
       type: Number,
       default: 0,
@@ -105,15 +105,11 @@ const restaurantSchema = new mongoose.Schema(
 
     // 🔥 KYC (Production Ready)
     kyc: {
-      businessType: { 
-        type: String, 
-        enum: ['proprietorship', 'partnership', 'pvt-ltd', 'llp', 'other'], 
-        default: 'other' 
-      },
-      legalName: { type: String, default: '' },
-      gstNumber: { type: String, default: '' },
-      panNumber: { type: String, default: '' },
-      fssaiNumber: { type: String, default: '' },
+      businessType: String,
+      legalName: String,
+      gstNumber: String,
+      panNumber: String,
+      fssaiNumber: String,
 
       documents: {
         panUrl: String,
@@ -135,7 +131,7 @@ const restaurantSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🔥 GEO INDEX (VERY IMPORTANT for distance-based queries)
+// 🔥 GEO INDEX (VERY IMPORTANT)
 restaurantSchema.index({ location: "2dsphere" });
 
 export default mongoose.model("Restaurant", restaurantSchema);
