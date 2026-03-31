@@ -127,13 +127,19 @@ const restaurantSchema = new mongoose.Schema(
         ifscCode: String,
       },
     },
+    onboarding: {
+  status: {
+    type: String,
+    enum: ["pending", "approved", "rejected"],
+    default: "pending"
   },
-<<<<<<< HEAD
+  approvedAt: Date,
+  rejectedAt: Date,
+  rejectionReason: String
+}
+    
+  },
 
-  { timestamps: true }
-
-=======
->>>>>>> 20cf1177f1717fc087624b427520b2c7317310cf
 );
 
 // 🔥 GEO INDEX (VERY IMPORTANT)
