@@ -13,10 +13,10 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
-    // 🔑 Extract token
+    //  Extract token
     const token = authHeader.replace('Bearer ', '');
 
-    // 🔥 Verify token
+    //  Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log("DECODED:", decoded);
 

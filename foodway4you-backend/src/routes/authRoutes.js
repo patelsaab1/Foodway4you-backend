@@ -10,9 +10,8 @@ import * as ctrl from '../controllers/authController.js';
 const router = express.Router();
 
 router.post('/register', authVal.registerValidation, validate, ctrl.register);
-
 router.post('/login', authVal.loginValidation, validate, ctrl.login);
-//new route
+
 router.post('/firebase-login', ctrl.firebaseAuth);
 
 
@@ -23,9 +22,10 @@ router.get('/me', auth, cache({ namespace: 'auth', ttlSeconds: 10, varyByUser: t
 router.patch(
   '/me',
   auth,
-  authVal.updateProfileValidation, // Yahan "authVal" namespace use ho raha hai
+  authVal.updateProfileValidation, 
   validate,
   ctrl.updateProfile
 );
+
 
 export default router;
