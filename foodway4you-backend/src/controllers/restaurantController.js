@@ -24,7 +24,11 @@ export const create = async (req, res, next) => {
 
 export const list = async (req, res, next) => {
   try {
-    const docs = await Restaurant.find().sort({ createdAt: -1 });
+    // const docs = await Restaurant.find().sort({ createdAt: -1 });
+    const docs = await Restaurant.find({
+  "onboarding.status": "approved",
+  isActive: true
+}).sort({ createdAt: -1 });
     response.success(res, docs);
   } catch (err) {
     next(err);
@@ -80,7 +84,7 @@ export const submitKyc = async (req, res, next) => {
 
     restaurant.onboarding = {
       ...restaurant.onboarding?.toObject?.(),
-      status: 'submitted',
+      status: 'pending',
       submittedAt: new Date(),
       rejectedAt: null,
       rejectionReason: '',
@@ -111,9 +115,17 @@ export const kycStatus = async (req, res, next) => {
 
 export const get = async (req, res, next) => {
   try {
+    // const doc = await Restaurant.findById(req.params.id);
+    // if (!doc) return response.notFound(res);
+    // response.success(res, doc);
     const doc = await Restaurant.findById(req.params.id);
-    if (!doc) return response.notFound(res);
-    response.success(res, doc);
+
+if (!doc || 
+    doc.onboarding.status !== "approved" || 
+    !doc.isActive) {
+  return response.error(res, "Restaurant not available", 404);
+}
+response.success(res, doc);
   } catch (err) {
     next(err);
   }

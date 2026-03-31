@@ -222,7 +222,6 @@ export const updateProfile = async (req, res, next) => {
 };
 
 
-
 export const firebaseAuth = async (req, res, next) => {
   try {
     const { idToken } = req.body;

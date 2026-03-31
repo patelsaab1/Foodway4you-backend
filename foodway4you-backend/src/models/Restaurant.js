@@ -142,7 +142,7 @@ const restaurantSchema = new mongoose.Schema(
 
 );
 
-// 🔥 GEO INDEX (VERY IMPORTANT)
+//  GEO INDEX (VERY IMPORTANT)
 restaurantSchema.index({ location: "2dsphere" });
 
 export default mongoose.model("Restaurant", restaurantSchema);
