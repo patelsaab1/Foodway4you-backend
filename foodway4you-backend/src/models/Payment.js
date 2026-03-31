@@ -24,6 +24,11 @@ const paymentSchema = new mongoose.Schema({
     enum: ['cod', 'online', 'wallet'],
     required: true
   },
+  paymentGateway: {
+    type: String,
+    enum: ["razorpay", "stripe", "paytm", "none"],
+    default: "none"
+  },
   status: {
     type: String,
     enum: ['pending', 'completed', 'failed', 'refunded'],
@@ -41,6 +46,14 @@ const paymentSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  paidAt: {
+    type: Date,
+    default: null
+  },
+  codCollected: {
+    type: Boolean,
+    default: false
+  },
   failureReason: {
     type: String,
     default: null
@@ -52,6 +65,10 @@ const paymentSchema = new mongoose.Schema({
   refundReason: {
     type: String,
     default: null
+  },
+  metadata: {
+    type: Object,
+    default: {}
   }
 }, {
   timestamps: true

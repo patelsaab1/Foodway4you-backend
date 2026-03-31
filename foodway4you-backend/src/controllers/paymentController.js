@@ -1,5 +1,6 @@
 import response from '../utils/responseHelper.js';
 import { getRazorpay } from '../config/razorpay.js';
+import Payment from "../models/Payment.js";
 
 export const createOrder = async (req, res, next) => {
   try {
@@ -18,5 +19,25 @@ export const verify = async (req, res, next) => {
     response.error(res, 'Not implemented', 501);
   } catch (err) {
     next(err);
+  }
+};
+
+export const getAllPayments = async (req, res) => {
+  try {
+    const payments = await Payment.find()
+      .populate("User", "name email")
+      .populate("Order");
+
+    res.status(200).json({
+      success: true,
+      count: payments.length,
+      data: payments
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
