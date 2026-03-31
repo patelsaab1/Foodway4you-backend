@@ -17,7 +17,7 @@ router.get(
 );
 
 //  Approve / Reject
-router.put(
+router.patch(
   "/restaurants/:id/status",
   auth,
   role(["admin"]),
@@ -25,11 +25,19 @@ router.put(
 );
 
 //  Block / Unblock
-router.put(
+router.patch(
   "/restaurants/:id/toggle-block",
   auth,
   role(["admin"]),
   ctrl.toggleBlockRestaurant
 );
 
+
+//change
+router.get(
+  "/restaurants/:id",
+  auth,
+  role(["admin"]),
+  ctrl.getRestaurantById
+);
 export default router;
