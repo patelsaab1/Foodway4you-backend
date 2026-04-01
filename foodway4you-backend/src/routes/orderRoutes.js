@@ -12,7 +12,7 @@ router.get('/restaurant/:restaurantId', auth, ctrl.getRestaurantOrders);
 
 // 2. ORDER ACTIONS (Accept/Status/Cancel)
 // Jab restaurant order accept kare
-router.patch('/:id/accept', auth, bumpNamespaces(['orders']), ctrl.acceptOrder);
+router.patch('/:id/accept', auth, bumpNamespaces(['orders']), ctrl.confirmOrder);
 
 // Status manually update karne ke liye
 router.patch('/:id/status', auth, bumpNamespaces(['orders']), ctrl.updateStatus);
