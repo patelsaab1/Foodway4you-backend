@@ -205,9 +205,9 @@ export const updateProfile = async (req, res, next) => {
       userId,
       { $set: updateData },
       { 
-        new: true,           // updated document return karega
-        runValidators: true, // Schema validations check karega
-        select: '-password -refreshTokens' // Sensitive data hata dega
+        new: true,           
+        runValidators: true, 
+        select: '-password -refreshTokens' 
       }
     );
 
@@ -231,43 +231,41 @@ export const firebaseAuth = async (req, res, next) => {
       return response.error(res, 'Firebase connection failed', 500);
     }
 
-    
     const decodedToken = await admin.auth().verifyIdToken(idToken);
-    
-    
+
     const { email, name, picture, uid, phone_number } = decodedToken;
 
-    
-    let user = await User.findOne({
-      $or: [
-        { email: email || 'never-match-email@null.com' },
-        { phone: phone_number || 'never-match-phone' }
-      ]
-    });
+    let query = [];
+    if (email) query.push({ email });
+    if (phone_number) query.push({ phone: phone_number });
 
-    
+    let user = await User.findOne({ $or: query });
+
     if (!user) {
       user = await User.create({
         name: name || `User_${uid.slice(-4)}`,
-        email: email || null,
-        phone: phone_number || null,
+        email: email || undefined,
+        phone: phone_number || undefined,
         avatar: picture || null,
         isVerified: true,
-        password: crypto.randomBytes(16).toString('hex'), 
-      
+        password: crypto.randomBytes(16).toString('hex'),
       });
     }
 
-    
     const { accessToken, refreshToken, expiresAt } = generateTokens(user.id);
 
-   
     user.refreshTokens.push({ token: refreshToken, expiresAt });
     await user.save();
 
-    response.success(res, {
+    return response.success(res, {
       tokens: { accessToken, refreshToken },
-      user: { id: user.id, role: user.role, name: user.name, email: user.email, phone: user.phone }
+      user: {
+        id: user.id,
+        role: user.role,
+        name: user.name,
+        email: user.email,
+        phone: user.phone
+      }
     }, 'Firebase Authentication Successful');
 
   } catch (error) {
