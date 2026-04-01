@@ -12,7 +12,7 @@ router.get(
   "/restaurants",
   auth,
   role(["admin"]),
-  cache({ namespace: "admin:restaurants", ttlSeconds: 20 }),
+  // cache({ namespace: "admin:restaurants", ttlSeconds: 20 }),
   ctrl.getAllRestaurants
 );
 

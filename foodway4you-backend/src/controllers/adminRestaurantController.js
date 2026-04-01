@@ -10,45 +10,22 @@ const isAdmin = (req, res) => {
   return true;
 };
 
-// ================= GET ALL RESTAURANTS =================
+
+
 export const getAllRestaurants = async (req, res, next) => {
   try {
     if (!isAdmin(req, res)) return;
 
-    const { status, search, page = 1, limit = 10 } = req.query;
+    const restaurants = await Restaurant.find({})
+      .populate("owner", "name email phone")
+      .sort({ createdAt: -1 })
+      .lean();
 
-    const filter = {};
-
-    // Search 
-    if (search) {
-      filter.name = { $regex: new RegExp(search, "i") };
-    }
-
-    //  Active / Blocked
-    if (status === "active") filter.isActive = true;
-    if (status === "blocked") filter.isActive = false;
-
-    //  Pagination
-    const skip = (page - 1) * limit;
-
-    const [restaurants, total] = await Promise.all([
-      Restaurant.find(filter)
-        .populate("owner", "name email phone")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(Number(limit))
-        .lean(), 
-      Restaurant.countDocuments(filter),
-    ]);
-
-    return response.success(res, {
-      data: restaurants,
-      pagination: {
-        total,
-        page: Number(page),
-        pages: Math.ceil(total / limit),
-      },
-    }, "Restaurants fetched");
+    return response.success(
+      res,
+      restaurants,
+      "All restaurants fetched"
+    );
 
   } catch (err) {
     next(err);
@@ -60,7 +37,7 @@ export const updateRestaurantStatus = async (req, res, next) => {
   try {
     if (!isAdmin(req, res)) return;
 
-    const { status, reason } = req.body;
+    const { status, rejectionReason } = req.body;
 
     //  Validate status
     if (!["approved", "rejected"].includes(status)) {
@@ -74,13 +51,10 @@ export const updateRestaurantStatus = async (req, res, next) => {
       return response.notFound(res, "Restaurant not found");
     }
 
-    //  Prevent re-processing (VERY IMPORTANT)
-    if (restaurant.onboarding.status !== "pending") {
-      return response.error(res, "Already processed", 400);
-    }
+   
 
     //  Reject → reason mandatory
-    if (status === "rejected" && !reason?.trim()) {
+    if (status === "rejected" && !rejectionReason?.trim()) {
       return response.error(res, "Rejection reason is required", 400);
     }
 
@@ -95,7 +69,7 @@ export const updateRestaurantStatus = async (req, res, next) => {
 
     if (status === "rejected") {
       restaurant.onboarding.rejectedAt = new Date();
-      restaurant.onboarding.rejectionReason = reason.trim();
+      restaurant.onboarding.rejectionReason = rejectionReason.trim();
       restaurant.onboarding.approvedAt = null;
     }
 
