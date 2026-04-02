@@ -58,7 +58,7 @@ export const onboard = async (req, res, next) => {
           'onboarding.status': 'pending',
         },
       },
-      { upsert: true, new: true, runValidators: true }
+      {  new: true, runValidators: true }
     );
 
     return response.success(res, doc, 'Onboarding saved');

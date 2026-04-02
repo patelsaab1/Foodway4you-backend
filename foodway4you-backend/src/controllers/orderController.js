@@ -2,11 +2,23 @@ import mongoose from 'mongoose';
 import Order from '../models/Order.js';
 import User from '../models/User.js';
 import response from '../utils/responseHelper.js';
+import Restaurant from '../models/Restaurant.js';
 import { send } from '../services/emailService.js';
+
+const isRestaurantAvailable = (restaurant) => {
+  return restaurant &&
+    restaurant.onboarding.status === "approved" &&
+    restaurant.isActive;
+};
 
 // ====================== 1. CUSTOMER: PLACE ORDER ======================
 export const place = async (req, res, next) => {
   try {
+        const restaurant = await Restaurant.findById(req.body.restaurant);
+        if (!isRestaurantAvailable(restaurant)) {
+  return response.error(res, "Restaurant not available", 400);
+}
+
     const order = await Order.create({ ...req.body, customer: req.user.id });
     return response.success(res, order, 'Order placed successfully', 201);
   } catch (err) { next(err); }
@@ -21,6 +33,7 @@ export const confirmOrder = async (req, res, next) => {
       { new: true, runValidators: true }
     );
     if (!order) return response.error(res, "Order not found", 404);
+    
     return response.success(res, order, 'Order confirmed by restaurant');
   } catch (err) { next(err); }
 };
@@ -171,6 +184,11 @@ export const cancel = async (req, res, next) => {
 // ====================== 10. ADDITIONAL UTILS ======================
 export const getRestaurantOrders = async (req, res, next) => {
   try {
+    const restaurant = await Restaurant.findById(req.body.restaurant);
+        if (!isRestaurantAvailable(restaurant)) {
+  return response.error(res, "Restaurant not available", 400);
+}
+
     const orders = await Order.find({ restaurant: req.params.restaurantId }).sort('-createdAt');
     return response.success(res, orders, 'Restaurant orders fetched');
   } catch (err) { next(err); }
