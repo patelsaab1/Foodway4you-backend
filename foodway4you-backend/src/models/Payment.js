@@ -69,7 +69,31 @@ const paymentSchema = new mongoose.Schema({
   metadata: {
     type: Object,
     default: {}
-  }
+  },
+  //change  
+  restaurant: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'User',
+  required: true
+},
+deliveryBoy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'User',
+  default: null
+},
+orderType: {
+  type: String,
+  enum: ['delivery', 'pickup'],
+  default: 'delivery'
+},
+companyAmount: {
+  type: Number,
+  default: 0
+},
+restaurantAmount: {
+  type: Number,
+  default: 0
+}
 }, {
   timestamps: true
 });

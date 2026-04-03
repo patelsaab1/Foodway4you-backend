@@ -19,15 +19,17 @@ const restaurantSchema = new mongoose.Schema(
       required: true,
     },
 
+    
     // Address (Readable)
     address: {
       street: String,
       city: String,
       state: String,
       zipCode: String,
+      
     },
 
-    // 🔥 GEO LOCATION (IMPORTANT)
+    //  GEO LOCATION (IMPORTANT)
     location: {
       type: {
         type: String,
@@ -139,7 +141,6 @@ const restaurantSchema = new mongoose.Schema(
 }
     
   },
-
 );
 
 //  GEO INDEX (VERY IMPORTANT)

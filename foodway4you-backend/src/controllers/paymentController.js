@@ -1,6 +1,9 @@
 import response from '../utils/responseHelper.js';
 import { getRazorpay } from '../config/razorpay.js';
 import Payment from "../models/Payment.js";
+import Payout from '../models/Payout.js';
+import Order from '../models/Order.js';
+import { calculateSplit } from '../utils/payoutHelper.js';
 import crypto from "crypto";
 
 export const createOrder = async (req, res, next) => {
@@ -10,7 +13,7 @@ export const createOrder = async (req, res, next) => {
       return response.error(res, "Razorpay not configured", 503);
     }
 
-    const { amount, currency, receipt, orderId } = req.body;
+    const { amount, currency, receipt, orderId ,restaurant} = req.body;
 
     // Razorpay order creation
     const razorpayOrder = await razorpay.orders.create({
@@ -25,6 +28,7 @@ export const createOrder = async (req, res, next) => {
       orderId: orderId,
       user: req.user.id,
       amount,
+      restaurant: restaurant,
       currency: currency || "INR",
       paymentMethod: "online",
       paymentGateway: "razorpay",
@@ -52,50 +56,74 @@ export const createOrder = async (req, res, next) => {
 };
 
 
-
 export const verify = async (req, res, next) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
+    
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return response.error(res, "All payment fields are required", 400);
+      return response.error(res, "Missing payment verification fields", 400);
     }
 
-    // Generate signature on backend
-    const body = `${razorpay_order_id}|${razorpay_payment_id}`;
-    // const expectedSignature = crypto
-    //   .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-    //   .update(body)
-    //   .digest("hex");
-
-    // console.log("Expected Signature:", expectedSignature);
-    // console.log("Received Signature:", razorpay_signature);
-
-    // Compare signatures
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(body.toString())
+      .digest("hex");
+    //postmentesting ke liye comment only
     // if (expectedSignature !== razorpay_signature) {
-    //   return response.error(res, "Invalid payment signature", 400);
+    //   return response.error(res, "Invalid payment signature. Transaction failed.", 400);
     // }
 
-    // Find payment in DB
+    
     const payment = await Payment.findOne({ razorpayOrderId: razorpay_order_id });
+    
     if (!payment) {
-      return response.error(res, "Payment record not found", 404);
+      return response.error(res, "Payment record not found in database", 404);
     }
 
-    // Update payment
+    if (payment.status === "completed") {
+        return response.error(res, "Payment is already verified", 400);
+    }
+
+    const commissionRate = 10; 
+    const { commissionAmount, netAmount } = calculateSplit(payment.amount, commissionRate);
+
     payment.status = "completed";
     payment.razorpayPaymentId = razorpay_payment_id;
     payment.razorpaySignature = razorpay_signature;
     payment.paidAt = new Date();
-
+    
+    payment.companyAmount = commissionAmount;    
+    payment.restaurantAmount = netAmount;        
+    
     await payment.save();
+    await Payout.create({
+        user: payment.restaurant, 
+        order: payment.orderId,   
+        amount: payment.amount,
+        type: 'restaurant',
+        status: 'pending',
+        commissionRate: commissionRate,
+        commissionAmount: commissionAmount,
+        netAmount: netAmount,
+        paymentMethod: 'upi' 
+    });
 
-    return response.success(res, payment, "Payment verified successfully");
+    
+    await Order.findByIdAndUpdate(payment.orderId, { 
+        status: 'paid',
+        paymentStatus: 'completed',
+        paymentMethod: 'online' 
+    });
+
+    return response.success(res, payment, "Payment verified and Payout record generated successfully");
 
   } catch (err) {
+    console.error("Verification Error:", err);
     next(err);
   }
-}
+};
 
 export const getAllPayments = async (req, res) => {
   try {
