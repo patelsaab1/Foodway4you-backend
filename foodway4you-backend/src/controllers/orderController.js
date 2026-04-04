@@ -2,11 +2,24 @@ import mongoose from 'mongoose';
 import Order from '../models/Order.js';
 import User from '../models/User.js';
 import response from '../utils/responseHelper.js';
+import Restaurant from '../models/Restaurant.js';
 import { send } from '../services/emailService.js';
+import Payment from '../models/Payment.js';
+
+const isRestaurantAvailable = (restaurant) => {
+  return restaurant &&
+    restaurant.onboarding.status === "approved" &&
+    restaurant.isActive;
+};
 
 // ====================== 1. CUSTOMER: PLACE ORDER ======================
 export const place = async (req, res, next) => {
   try {
+        const restaurant = await Restaurant.findById(req.body.restaurant);
+        if (!isRestaurantAvailable(restaurant)) {
+  return response.error(res, "Restaurant not available", 400);
+}
+
     const order = await Order.create({ ...req.body, customer: req.user.id });
     return response.success(res, order, 'Order placed successfully', 201);
   } catch (err) { next(err); }
@@ -21,6 +34,7 @@ export const confirmOrder = async (req, res, next) => {
       { new: true, runValidators: true }
     );
     if (!order) return response.error(res, "Order not found", 404);
+    
     return response.success(res, order, 'Order confirmed by restaurant');
   } catch (err) { next(err); }
 };
@@ -75,22 +89,30 @@ export const riderAcceptOrder = async (req, res) => {
   try {
     const { id } = req.params;
     const { email } = req.query;
+    
+    const rider = await User.findOne({ email: email?.trim().toLowerCase() });
+    if (!rider) return res.status(404).send("<h1>Rider not found</h1>");
 
     const order = await Order.findById(id).populate('restaurant', 'name');
     if (!order) return res.status(404).send("Order not found");
     if (order.deliveryPartner) return res.send("<h1>Order already taken.</h1>");
 
-    const rider = await User.findOne({ email: email?.trim().toLowerCase() });
-    if (!rider) return res.status(404).send("<h1>Rider not found</h1>");
+
+     
 
     order.deliveryPartner = rider._id;
     order.status = 'picked-up';
     await order.save();
 
+    await Payment.findOneAndUpdate(
+      { orderId: id }, 
+      { deliveryBoy: rider._id } 
+    );
+
     return res.send(`
       <div style="text-align:center; padding:100px; font-family:sans-serif; background:#fff;">
-        <h1 style="font-weight: 300; letter-spacing: 5px; text-transform: uppercase;">Picked Up</h1>
-        <p>Order #${order.orderNumber} is assigned to you.</p>
+        <h1 style="font-weight: 300; letter-spacing: 5px; text-transform: uppercase;">Picked Up
+        Order Assigned to ${rider.name}</h1>
       </div>
     `);
   } catch (err) {
@@ -171,6 +193,11 @@ export const cancel = async (req, res, next) => {
 // ====================== 10. ADDITIONAL UTILS ======================
 export const getRestaurantOrders = async (req, res, next) => {
   try {
+    const restaurant = await Restaurant.findById(req.body.restaurant);
+        if (!isRestaurantAvailable(restaurant)) {
+  return response.error(res, "Restaurant not available", 400);
+}
+
     const orders = await Order.find({ restaurant: req.params.restaurantId }).sort('-createdAt');
     return response.success(res, orders, 'Restaurant orders fetched');
   } catch (err) { next(err); }

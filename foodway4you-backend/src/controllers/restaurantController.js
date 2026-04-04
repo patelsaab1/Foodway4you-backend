@@ -6,6 +6,7 @@ const normalizeEmail = (value) => (value || '').toString().trim().toLowerCase();
 
 export const create = async (req, res, next) => {
   try {
+    
     const data = { ...req.body, owner: req.user.id };
     const doc = await Restaurant.create(data);
 
@@ -58,7 +59,7 @@ export const onboard = async (req, res, next) => {
           'onboarding.status': 'pending',
         },
       },
-      { upsert: true, new: true, runValidators: true }
+      {  new: true, runValidators: true }
     );
 
     return response.success(res, doc, 'Onboarding saved');
