@@ -4,6 +4,7 @@ import User from '../models/User.js';
 import response from '../utils/responseHelper.js';
 import Restaurant from '../models/Restaurant.js';
 import { send } from '../services/emailService.js';
+import Payment from '../models/Payment.js';
 
 const isRestaurantAvailable = (restaurant) => {
   return restaurant &&
@@ -88,22 +89,30 @@ export const riderAcceptOrder = async (req, res) => {
   try {
     const { id } = req.params;
     const { email } = req.query;
+    
+    const rider = await User.findOne({ email: email?.trim().toLowerCase() });
+    if (!rider) return res.status(404).send("<h1>Rider not found</h1>");
 
     const order = await Order.findById(id).populate('restaurant', 'name');
     if (!order) return res.status(404).send("Order not found");
     if (order.deliveryPartner) return res.send("<h1>Order already taken.</h1>");
 
-    const rider = await User.findOne({ email: email?.trim().toLowerCase() });
-    if (!rider) return res.status(404).send("<h1>Rider not found</h1>");
+
+     
 
     order.deliveryPartner = rider._id;
     order.status = 'picked-up';
     await order.save();
 
+    await Payment.findOneAndUpdate(
+      { orderId: id }, 
+      { deliveryBoy: rider._id } 
+    );
+
     return res.send(`
       <div style="text-align:center; padding:100px; font-family:sans-serif; background:#fff;">
-        <h1 style="font-weight: 300; letter-spacing: 5px; text-transform: uppercase;">Picked Up</h1>
-        <p>Order #${order.orderNumber} is assigned to you.</p>
+        <h1 style="font-weight: 300; letter-spacing: 5px; text-transform: uppercase;">Picked Up
+        Order Assigned to ${rider.name}</h1>
       </div>
     `);
   } catch (err) {

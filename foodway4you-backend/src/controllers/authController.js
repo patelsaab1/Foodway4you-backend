@@ -37,16 +37,16 @@ const buildResetPasswordEmailHtml = ({ name, resetUrl }) => {
 export const register = async (req, res, next) => {
   try {
     const { name, email, phone, password, role } = req.body;
+    // 🔹 Normalize input
+      const normalizedEmail = email?.toLowerCase().trim();
+       const normalizedPhone = phone?.trim();
     if (role && !['customer', 'restaurant', 'rider', 'admin'].includes(role)) {
       return response.error(res, 'Invalid role', 400);
     }
-    const exists = await User.findOne({ $or: [{ email }, { phone }] });
+    const exists = await User.findOne({ $or: [{ email:normalizedEmail }, { phone:normalizedPhone }] });
     if (exists) return response.error(res, 'User already exists', 400);
-    const user = await User.create({ name, email, phone, password, role });
-    const otp = generateOTP();
-    user.verificationOTP = otp;
-    user.verificationOTPExpire = new Date(Date.now() + 10 * 60 * 1000);
-    await user.save();
+    const user = await User.create({ name,  email: normalizedEmail, phone: normalizedPhone,  password,role });
+    
     response.success(res, { user: { id: user.id, email: user.email } }, 'Registered');
   } catch (err) {
     next(err);

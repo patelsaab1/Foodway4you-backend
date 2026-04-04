@@ -6,6 +6,7 @@ const normalizeEmail = (value) => (value || '').toString().trim().toLowerCase();
 
 export const create = async (req, res, next) => {
   try {
+    
     const data = { ...req.body, owner: req.user.id };
     const doc = await Restaurant.create(data);
 
