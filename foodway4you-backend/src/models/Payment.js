@@ -93,7 +93,21 @@ companyAmount: {
 restaurantAmount: {
   type: Number,
   default: 0
-}
+},
+
+deliveryBoyPaidToCompany: {
+  type: Boolean,
+  default: false
+},
+adminVerifiedCOD: {
+  type: Boolean,
+  default: false
+},
+handoverScreenshot: {
+  type: String, 
+  default: null
+},
+
 }, {
   timestamps: true
 });

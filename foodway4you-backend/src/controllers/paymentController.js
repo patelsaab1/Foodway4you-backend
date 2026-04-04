@@ -144,3 +144,108 @@ export const getAllPayments = async (req, res) => {
     });
   }
 };
+
+
+
+export const createCODPayment = async (req, res, next) => {
+  try {
+    const { orderId, restaurantId, amount, deliveryBoyId } = req.body;
+
+    
+    const existingPayment = await Payment.findOne({ orderId });
+    if (existingPayment) {
+      return response.error(res, "Payment record already exists for this order", 400);
+    }
+
+    
+    const payment = await Payment.create({
+      orderId: orderId,
+      user: req.user.id, 
+      restaurant: restaurantId,
+      deliveryBoy: deliveryBoyId || null, 
+      amount: amount,
+      paymentMethod: "cod",
+      paymentGateway: "none",
+      status: "pending", 
+      codCollected: false,
+      deliveryBoyPaidToCompany: false,
+      adminVerifiedCOD: false
+    });
+
+    
+    await Order.findByIdAndUpdate(orderId, {
+      paymentMethod: 'cod',
+      paymentStatus: 'pending'
+    });
+
+    return response.success(res, payment, "COD Payment record created successfully", 201);
+  } catch (err) {
+    next(err);
+  }
+};
+export const markCashCollected = async (req, res, next) => {
+  try {
+    const { paymentId } = req.body;
+
+    const payment = await Payment.findById(paymentId);
+    if (!payment) return response.notFound(res, "Payment record not found");
+
+    // सुरक्षा: केवल असाइन किया गया राइडर ही इसे कलेक्टेड मार्क कर सकता है
+    if (payment.deliveryBoy.toString() !== req.user.id) {
+      return response.error(res, "You are not authorized for this order", 403);
+    }
+
+    payment.codCollected = true;
+    payment.status = "completed"; // कैश मिल गया मतलब पेमेंट पूरा हुआ
+    payment.paidAt = new Date();
+    
+    await payment.save();
+
+    return response.success(res, payment, "Cash collected from customer successfully!");
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deliveryBoyMarkCODAsPaid = async (req, res, next) => {
+  try {
+    const { paymentId, screenshotUrl } = req.body;
+
+    const payment = await Payment.findById(paymentId);
+
+    if (!payment) return response.notFound(res, "Payment record not found");
+    
+    if (payment.deliveryBoy.toString() !== req.user.id) {
+      return response.error(res, "Unauthorized action", 403);
+    }
+
+    payment.deliveryBoyPaidToCompany = true;
+    payment.handoverScreenshot = screenshotUrl;
+    await payment.save();
+
+    return response.success(res, payment, "COD handover request sent to admin for verification.");
+  } catch (err) {
+    next(err);
+  }
+};
+export const submitCodHandover = async (req, res, next) => {
+  try {
+    const { paymentId, screenshotUrl } = req.body;
+
+    if (!screenshotUrl) {
+      return response.error(res, "Please upload a payment screenshot", 400);
+    }
+
+    const payment = await Payment.findById(paymentId);
+    if (!payment) return response.notFound(res, "Payment record not found");
+
+    payment.deliveryBoyPaidToCompany = true;
+    payment.handoverScreenshot = screenshotUrl; // Cloudinary URL या फाइल पाथ
+    
+    await payment.save();
+
+    return response.success(res, payment, "Handover request submitted. Waiting for admin approval.");
+  } catch (err) {
+    next(err);
+  }
+};
