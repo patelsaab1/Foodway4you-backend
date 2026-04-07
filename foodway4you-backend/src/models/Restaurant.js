@@ -2,15 +2,10 @@ import mongoose from "mongoose";
 
 const restaurantSchema = new mongoose.Schema(
   {
-    // Basic Info
     name: {
       type: String,
       required: true,
       trim: true,
-    },
-
-    description: {
-      type: String,
     },
 
     owner: {
@@ -19,17 +14,33 @@ const restaurantSchema = new mongoose.Schema(
       required: true,
     },
 
-    
-    // Address (Readable)
-    address: {
-      street: String,
-      city: String,
-      state: String,
-      zipCode: String,
-      
+    description: {
+      type: String,
     },
 
-    //  GEO LOCATION (IMPORTANT)
+    restaurantType: {
+      type: String,
+      enum: ["veg", "non-veg", "fast-food"],
+      required: true,
+    },
+
+    plan: {
+      type: String,
+      enum: ["basic", "premium", "enterprise"],
+      required: true,
+    },
+
+    // address: {
+    //   type: String,
+    //   required: true
+    // },
+    address: {
+      street: { type: String, required: true },
+      city: { type: String, required: true, index: true },
+      state: { type: String, required: true },
+      zipCode: { type: String, required: true },
+    },
+
     location: {
       type: {
         type: String,
@@ -37,25 +48,21 @@ const restaurantSchema = new mongoose.Schema(
         default: "Point",
       },
       coordinates: {
-        type: [Number], // [longitude, latitude]
+        type: [Number],
         required: true,
       },
     },
 
-    // Cuisine
     cuisine: [String],
 
-    // Contact
     contact: {
       phone: String,
       email: String,
     },
 
-    // Media
     images: [String],
     logo: String,
 
-    // Opening Hours
     openingHours: [
       {
         day: {
@@ -79,7 +86,6 @@ const restaurantSchema = new mongoose.Schema(
       },
     ],
 
-    // Delivery
     deliveryFee: {
       type: Number,
       default: 0,
@@ -88,7 +94,6 @@ const restaurantSchema = new mongoose.Schema(
     minimumOrder: Number,
     estimatedDeliveryTime: Number,
 
-    // Ratings (future use)
     rating: {
       type: Number,
       default: 0,
@@ -99,20 +104,18 @@ const restaurantSchema = new mongoose.Schema(
       default: 0,
     },
 
-    // Status
     isActive: {
       type: Boolean,
       default: true,
     },
 
-    // 🔥 KYC (Production Ready)
     kyc: {
-      businessType: String,
+      businessType: { type: String, default: "Restaurant" },
       legalName: String,
-      gstNumber: String,
+      aadharNumber: String,
       panNumber: String,
+      gstNumber: String,
       fssaiNumber: String,
-
       documents: {
         panUrl: String,
         gstUrl: String,
@@ -124,26 +127,27 @@ const restaurantSchema = new mongoose.Schema(
       },
 
       bank: {
+        bankName: String,
         accountHolderName: String,
         accountNumber: String,
         ifscCode: String,
       },
     },
+
     onboarding: {
-  status: {
-    type: String,
-    enum: ["pending", "approved", "rejected"],
-    default: "pending"
+      status: {
+        type: String,
+        enum: ["pending", "approved", "rejected"],
+        default: "pending"
+      },
+      approvedAt: Date,
+      rejectedAt: Date,
+      rejectionReason: String
+    }
   },
-  approvedAt: Date,
-  rejectedAt: Date,
-  rejectionReason: String
-}
-    
-  },
+  { timestamps: true }
 );
 
-//  GEO INDEX (VERY IMPORTANT)
 restaurantSchema.index({ location: "2dsphere" });
 
 export default mongoose.model("Restaurant", restaurantSchema);

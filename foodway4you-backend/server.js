@@ -57,6 +57,7 @@ app.get('/health', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/restaurants', restaurantRoutes);
 app.use('/api/v1/menu', menuRoutes);
+app.use('/uploads', express.static('uploads'));
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/delivery', deliveryRoutes);
 app.use('/api/v1/payments', paymentRoutes);

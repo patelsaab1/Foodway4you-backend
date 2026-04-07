@@ -13,6 +13,10 @@ const orderSchema = new mongoose.Schema({
     required: true
   },
 
+  customerName: {
+    type: String
+  },
+
   restaurant: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Restaurant',
@@ -38,8 +42,8 @@ const orderSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: [
-      'pending','confirmed','preparing','ready',
-      'picked-up','on-the-way','delivered','cancelled'
+      'pending', 'confirmed', 'preparing', 'ready',
+      'picked-up', 'on-the-way', 'delivered', 'cancelled'
     ],
     default: 'pending',
     index: true
@@ -57,8 +61,12 @@ const orderSchema = new mongoose.Schema({
     required: true
   },
 
-  subtotal: { type: Number, required: true },
-  deliveryFee: { type: Number, required: true },
+  paymentMode: {
+    type: String
+  },
+
+  subtotal: { type: Number, required: true, default: 0 },
+  deliveryFee: { type: Number, required: true, default: 0 },
   tax: { type: Number, default: 0 },
   discount: { type: Number, default: 0 },
 
@@ -87,30 +95,29 @@ const orderSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-
-// ✅ Auto Order Number
-orderSchema.pre('save', function(next) {
+orderSchema.pre('save', async function (next) {
   if (!this.orderNumber) {
     this.orderNumber = 'FW4U' + Date.now().toString().slice(-8);
   }
 
-  // ✅ Auto total calculation (IMPORTANT)
-  this.totalAmount =
-    this.subtotal +
-    this.tax -
-    this.discount +
-    this.deliveryFee;
+  if (this.paymentMethod) {
+    this.paymentMode = this.paymentMethod.toUpperCase();
+  }
+
+  const sub = Number(this.subtotal) || 0;
+  const tax = Number(this.tax) || 0;
+  const fee = Number(this.deliveryFee) || 0;
+  const disc = Number(this.discount) || 0;
+
+  this.totalAmount = sub + tax + fee - disc;
 
   next();
 });
 
-// ✅ Index
 orderSchema.index({ customer: 1, status: 1 });
 orderSchema.index({ restaurant: 1, createdAt: -1 });
+orderSchema.index({ status: 1, createdAt: -1 });
 
-// ✅ FIX Overwrite Error
-const Order =
-  mongoose.models.Order ||
-  mongoose.model('Order', orderSchema);
+const Order = mongoose.models.Order || mongoose.model('Order', orderSchema);
 
 export default Order;

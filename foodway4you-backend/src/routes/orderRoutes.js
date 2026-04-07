@@ -1,35 +1,72 @@
 import express from 'express';
 import auth from '../middleware/authMiddleware.js';
+import role from '../middleware/roleMiddleware.js'; 
 import { cache, bumpNamespaces } from '../middleware/cacheMiddleware.js';
 import * as ctrl from '../controllers/orderController.js';
 
-
 const router = express.Router();
+router.get('/', auth, ctrl.list);
+router.get('/restaurant/:restaurantId', auth, ctrl.list);
+router.get('/:id/rider-accept', ctrl.riderAcceptOrder);
+router.patch(
+  '/:id/accept', 
+  auth, 
+  role(['restaurant', 'admin']), 
+  bumpNamespaces(['orders']), 
+  ctrl.confirmOrder
+);
 
-// 1. RESTAURANT ROUTES (Specific routes hamesha upar hone chahiye)
-// Isse restaurant apne orders dekh payega
-router.get('/restaurant/:restaurantId', auth, ctrl.getRestaurantOrders);
+router.patch(
+  '/:id/preparing', 
+  auth, 
+  role(['restaurant', 'admin']), 
+  ctrl.startPreparing
+);
 
-// 2. ORDER ACTIONS (Accept/Status/Cancel)
-// Jab restaurant order accept kare
-router.patch('/:id/accept', auth, bumpNamespaces(['orders']), ctrl.confirmOrder);
-router.patch('/:id/preparing', auth, ctrl.startPreparing);
-router.patch('/:id/ready', auth, ctrl.orderReady);
+router.patch(
+  '/:id/ready', 
+  auth, 
+  role(['restaurant', 'admin']), 
+  ctrl.orderReady
+);
 
-// Status manually update karne ke liye
-router.patch('/:id/status', auth, bumpNamespaces(['orders']), ctrl.updateStatus);
-router.patch('/:id/start-delivery', auth, ctrl.startDelivery);
-router.patch('/:id/complete', auth, ctrl.completeOrder);
+router.patch(
+  '/:id/start-delivery', 
+  auth, 
+  role(['restaurant', 'admin']), 
+  ctrl.startDelivery
+);
 
+router.patch(
+  '/:id/complete', 
+  auth, 
+  role(['restaurant', 'admin']), 
+  bumpNamespaces(['orders']), 
+  ctrl.completeOrder
+);
 
-// Order cancel karne ke liye
-router.post('/:id/cancel', auth, bumpNamespaces(['orders']), ctrl.cancel);
+router.patch(
+  '/:id/status', 
+  auth, 
+  role(['restaurant', 'admin']), 
+  bumpNamespaces(['orders']), 
+  ctrl.updateStatus
+);
 
-// 3. CUSTOMER ROUTES
-// Order place karne ke liye
+router.post(
+  '/:id/cancel', 
+  auth, 
+  role(['restaurant', 'admin']), 
+  bumpNamespaces(['orders']), 
+  ctrl.cancel
+);
+
 router.post('/', auth, bumpNamespaces(['orders']), ctrl.place);
-
-// Order track karne ke liye (Cachable)
-router.get('/:id/track', auth, cache({ namespace: 'orders', ttlSeconds: 20, varyByUser: true }), ctrl.track);
+router.get(
+  '/:id/track', 
+  auth, 
+  cache({ namespace: 'orders', ttlSeconds: 20, varyByUser: true }), 
+  ctrl.track
+);
 
 export default router;

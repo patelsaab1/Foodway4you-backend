@@ -6,6 +6,14 @@ import Restaurant from '../models/Restaurant.js';
 import { send } from '../services/emailService.js';
 import Payment from '../models/Payment.js';
 
+const emitOrderUpdate = (req, order) => {
+  const io = req.app.get('io');
+  if (io) {
+    io.emit(`orderUpdate:${order._id}`, order);
+    io.emit('adminOrderUpdate', order);
+  }
+};
+
 const isRestaurantAvailable = (restaurant) => {
   return restaurant &&
     restaurant.onboarding.status === "approved" &&
@@ -32,9 +40,9 @@ export const confirmOrder = async (req, res, next) => {
       req.params.id,
       { status: 'confirmed' },
       { new: true, runValidators: true }
-    );
+    ).populate('items.menuItem', 'name');
     if (!order) return response.error(res, "Order not found", 404);
-    
+    emitOrderUpdate(req, order);
     return response.success(res, order, 'Order confirmed by restaurant');
   } catch (err) { next(err); }
 };
@@ -46,8 +54,9 @@ export const startPreparing = async (req, res, next) => {
       req.params.id,
       { status: 'preparing' },
       { new: true, runValidators: true }
-    );
+    ).populate('items.menuItem', 'name');
     if (!order) return response.error(res, "Order not found", 404);
+    emitOrderUpdate(req, order);
     return response.success(res, order, 'Chef has started cooking');
   } catch (err) { next(err); }
 };
@@ -60,9 +69,10 @@ export const orderReady = async (req, res, next) => {
       id,
       { status: 'ready' },
       { new: true, runValidators: true }
-    ).populate('restaurant', 'name');
+    ).populate('restaurant', 'name').populate('items.menuItem', 'name');
 
     if (!order) return response.error(res, "Order not found", 404);
+      emitOrderUpdate(req, order);
 
     const { testEmail } = req.body;
     let riders = testEmail ? [{ email: testEmail }] : await User.find({ role: 'rider' }).select('email');
@@ -129,6 +139,7 @@ export const startDelivery = async (req, res, next) => {
       { new: true, runValidators: true }
     );
     if (!order) return response.error(res, "Order not found", 404);
+    emitOrderUpdate(req, order);
     return response.success(res, order, 'Rider is on the way');
   } catch (err) { next(err); }
 };
@@ -142,6 +153,7 @@ export const completeOrder = async (req, res, next) => {
       { new: true, runValidators: true }
     );
     if (!order) return response.error(res, "Order not found", 404);
+    emitOrderUpdate(req, order);
     return response.success(res, order, 'Order delivered successfully');
   } catch (err) { next(err); }
 };
@@ -151,7 +163,7 @@ export const track = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id)
       .populate('restaurant', 'name location')
-      .populate('deliveryPartner', 'name phone');
+      .populate('deliveryPartner', 'name phone') .populate('items.menuItem', 'name');
 
     if (!order) return response.error(res, "Order not found", 404);
 
@@ -186,31 +198,58 @@ export const cancel = async (req, res, next) => {
 
     order.status = 'cancelled';
     await order.save();
+    emitOrderUpdate(req, order);
+    
     return response.success(res, order, 'Order cancelled successfully');
   } catch (err) { next(err); }
 };
 
 // ====================== 10. ADDITIONAL UTILS ======================
-export const getRestaurantOrders = async (req, res, next) => {
+export const list = async (req, res, next) => {
   try {
-    const restaurant = await Restaurant.findById(req.body.restaurant);
-        if (!isRestaurantAvailable(restaurant)) {
-  return response.error(res, "Restaurant not available", 400);
-}
-
-    const orders = await Order.find({ restaurant: req.params.restaurantId }).sort('-createdAt');
+     const restaurant = await Restaurant.findOne({ owner: req.user.id });
+   
+     if (!restaurant) {
+      return response.success(res, [], 'No restaurant found for this user');
+    }
+ const orders = await Order.find({ restaurant: restaurant._id })
+      .populate('items.menuItem', 'name price')
+      .populate('customer', 'name phone')
+      .sort('-createdAt');
+      
     return response.success(res, orders, 'Restaurant orders fetched');
-  } catch (err) { next(err); }
+  } catch (err) { 
+    next(err); 
+  }
 };
 
 export const updateStatus = async (req, res, next) => {
   try {
+    const { status } = req.body;
     const order = await Order.findByIdAndUpdate(
       req.params.id, 
-      { status: req.body.status }, 
+      { status }, 
       { new: true, runValidators: true }
-    );
+    ).populate('restaurant', 'name').populate('items.menuItem', 'name');
+
     if (!order) return response.error(res, "Order not found", 404);
-    return response.success(res, order, `Status updated to ${req.body.status}`);
+    
+    emitOrderUpdate(req, order);
+
+    if (status === 'confirmed' || status === 'ready') {
+      const riders = await User.find({ role: 'rider' }).select('email');
+      console.log(`Status changed to ${status}. Sending mails to ${riders.length} riders.`);
+
+      if (riders.length > 0) {
+        for (const rider of riders) {
+          const acceptUrl = `http://localhost:5000/api/v1/orders/${order._id}/rider-accept?email=${rider.email}`;
+          const html = `<h1>New Order: ${order.orderNumber}</h1><p>Ready for pickup at ${order.restaurant?.name}</p><a href="${acceptUrl}">Accept Order</a>`;
+          
+          await send({ to: rider.email, subject: "New Delivery Opportunity", html });
+        }
+      }
+    }
+
+    return response.success(res, order, `Status updated to ${status}`);
   } catch (err) { next(err); }
 };
