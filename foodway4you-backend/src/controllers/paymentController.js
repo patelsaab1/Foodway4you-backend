@@ -190,13 +190,12 @@ export const markCashCollected = async (req, res, next) => {
     const payment = await Payment.findById(paymentId);
     if (!payment) return response.notFound(res, "Payment record not found");
 
-    // सुरक्षा: केवल असाइन किया गया राइडर ही इसे कलेक्टेड मार्क कर सकता है
     if (payment.deliveryBoy.toString() !== req.user.id) {
       return response.error(res, "You are not authorized for this order", 403);
     }
 
     payment.codCollected = true;
-    payment.status = "completed"; // कैश मिल गया मतलब पेमेंट पूरा हुआ
+    payment.status = "completed"; 
     payment.paidAt = new Date();
     
     await payment.save();
